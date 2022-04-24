@@ -67,20 +67,14 @@ where
     
 
     let map = Canvas::default()
-        .block(Block::default().title("Connection map").borders(Borders::ALL))
+        .block(Block::default().title("Connection map").borders(Borders::NONE))
         .paint(|ctx| {
             ctx.draw(&Map {
                 color: Color::White,
                 resolution: MapResolution::High,
             });
             ctx.layer();
-            ctx.draw(&Rectangle {
-                x: 0.0,
-                y: 0.0,
-                width: 10.0,
-                height: 10.0,
-                color: Color::Yellow,
-            });
+            
             for (i, s1) in app.servers.iter().enumerate() {
                 for s2 in &app.servers[i + 1..] {
                     ctx.draw(&Line {
@@ -88,7 +82,7 @@ where
                         y1: s1.coords.0,
                         y2: s2.coords.0,
                         x2: s2.coords.1,
-                        color: Color::Red,
+                        color: Color::LightBlue,
                     });
                 }
             }
@@ -101,7 +95,7 @@ where
                 ctx.print(
                     server.coords.1,
                     server.coords.0,
-                    Span::styled("X", Style::default().fg(color)),
+                    Span::styled("🐴", Style::default().fg(color)),
                 );
             }
         })

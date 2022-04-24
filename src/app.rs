@@ -78,32 +78,7 @@ impl<'a> App<'a> {
             show_chart: true,
             progress: 0.0,
             
-            servers: vec![
-                // Server {
-                //     name: "NorthAmerica-1",
-                //     location: "New York City",
-                //     coords: (41.3828939, 2.1774322),
-                //     status: "Up",
-                // },
-                // Server {
-                //     name: "Europe-1",
-                //     location: "Paris",
-                //     coords: (48.85, 2.35),
-                //     status: "Failure",
-                // },
-                // Server {
-                //     name: "SouthAmerica-1",
-                //     location: "São Paulo",
-                //     coords: (-23.54, -46.62),
-                //     status: "Up",
-                // },
-                // Server {
-                //     name: "Asia-1",
-                //     location: "Singapore",
-                //     coords: (1.35, 103.86),
-                //     status: "Up",
-                // },
-            ],
+            servers: vec![],
             enhanced_graphics,
         }
     }
