@@ -29,10 +29,15 @@ Dependencies
 ### Todo
 
 - [x] Base setup
+- [x] Add netstat retrieval of open connections and their ip
+- [x] Error handling maxdb
+- [x] Add maxmind geolookup
 - [ ] Add ip's to ignore
 - [ ] Replace argh with clap
-- [ ] Add netstat retrieval of open connections and their ip
-- [ ] Add maxmind geolookup
-- [ ] Better README
-- [x] Error handling maxdb
+- [ ] Make Geoip configurable 
+- [ ] Add new tab with configuration options
+- [ ] Add host public_ip as different marker on map
+- [ ] Refactor alot of on_tick code into modules
 - [ ] Write simple tests
+- [ ] Add to Brew Formulae
+- [ ] Better README
