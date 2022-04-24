@@ -38,6 +38,7 @@ fn run_app<B: Backend>(
         match events.recv()? {
             Event::Input(key) => match key {
                 Key::Char(c) => app.on_key(c),
+                Key::ESC => app.on_key('.'),
                 _ => {}
             },
             Event::Tick => app.on_tick(),

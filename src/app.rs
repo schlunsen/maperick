@@ -1,3 +1,4 @@
+use crossterm::style::Print;
 #[allow(dead_code)]
 use rand::{
     distributions::{Distribution, Uniform},
@@ -91,10 +92,11 @@ impl<'a> App<'a> {
     
 
     pub fn on_key(&mut self, c: char) {
+        println!("{}", c);
         match c {
             'q' => {
                 self.should_quit = true;
-            }
+            },
             _ => {}
         }
     }

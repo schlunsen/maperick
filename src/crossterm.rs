@@ -58,6 +58,7 @@ fn run_app<B: Backend>(
             if let Event::Key(key) = event::read()? {
                 match key.code {
                     KeyCode::Char(c) => app.on_key(c),
+                    KeyCode::Esc => app.on_key('q'),
                     _ => {}
                 }
             }
