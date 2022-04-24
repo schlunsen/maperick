@@ -1,3 +1,5 @@
+use clap::Parser;
+
 mod app;
 #[cfg(feature = "crossterm")]
 mod crossterm;
