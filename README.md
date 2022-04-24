@@ -1,4 +1,5 @@
 # Maperick
+![Workflow](https://github.com/schlunsen/maperick/actions/workflows/ci-tests.yml/badge.svg)
 
 Show connected ip addresses to your terminal on a TUI world map! 
 
