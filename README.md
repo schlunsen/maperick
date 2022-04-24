@@ -29,9 +29,10 @@ Dependencies
 ### Todo
 
 - [x] Base setup
+- [ ] Add ip's to ignore
 - [ ] Replace argh with clap
 - [ ] Add netstat retrieval of open connections and their ip
 - [ ] Add maxmind geolookup
 - [ ] Better README
-- [ ] Error handling
-- [ ] Write simple test 
+- [x] Error handling maxdb
+- [ ] Write simple tests

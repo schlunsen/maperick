@@ -22,6 +22,7 @@ argh = "0.1"
 sysinfo = "0.17.2"
 termcolor = "1.1.2"
 maxminddb = "0.17"
+public-ip = "0.2.2"
 
 
 [dev-dependencies]

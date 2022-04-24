@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 use rand::{
     distributions::{Distribution, Uniform},
     rngs::ThreadRng,
@@ -7,7 +8,7 @@ use tui::widgets::ListState;
 use netstat2::*;
 use sysinfo::{ProcessExt, System, SystemExt};
 
-use maxminddb::geoip2;
+use maxminddb::{geoip2, Reader};
 
 struct ProcessInfo {
     pid: u32,
@@ -61,6 +62,7 @@ pub struct App<'a> {
     pub tabs: TabsState<'a>,
     pub show_chart: bool,
     pub progress: f64,
+    pub reader: Reader<Vec<u8>>,
     
     
     pub servers: Vec<Server<'a>>,
@@ -69,7 +71,9 @@ pub struct App<'a> {
 
 impl<'a> App<'a> {
     pub fn new(title: &'a str, enhanced_graphics: bool) -> App<'a> {
-        
+        let reader = maxminddb::Reader::open_readfile(
+            "mmdbs/GeoLite2-City.mmdb",
+        ).unwrap();
 
         App {
             title,
@@ -77,6 +81,7 @@ impl<'a> App<'a> {
             tabs: TabsState::new(vec!["Tab0"]),
             show_chart: true,
             progress: 0.0,
+            reader: reader,
             
             servers: vec![],
             enhanced_graphics,
@@ -124,28 +129,18 @@ impl<'a> App<'a> {
 
             if s.state == Some(TcpState::Listen) {
                 
-            } else {
-                
-                
+            } else {   
                 let mut remoteAddr = s.remote_addr.clone();
                 remoteAddrs.insert(count, remoteAddr);
                 count = count + 1;
             }
-        }
-
-        
-
-        let reader = maxminddb::Reader::open_readfile(
-            "mmdbs/GeoLite2-City.mmdb",
-        ).unwrap();
+        }        
         self.servers.clear();
 
-        
-        
         let mut count = 0;
         for x in remoteAddrs {
             
-            let city: geoip2::City = match reader.lookup(x.unwrap()) {
+            let city: geoip2::City = match self.reader.lookup(x.unwrap()) {
                 Ok(city) => {city},
                 Err(_) => {
                     continue
@@ -161,9 +156,7 @@ impl<'a> App<'a> {
 
             count = count + 1;
         }
-
-        
-        
+   
     }
 
     
