@@ -27,4 +27,3 @@ public-ip = "0.2.2"
 
 [dev-dependencies]
 rand = "0.8"
-argh = "0.1"
