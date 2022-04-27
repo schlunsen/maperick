@@ -8,6 +8,8 @@ use std::{net::{IpAddr, Ipv4Addr, Ipv6Addr}, collections::HashSet, str::FromStr}
 use tui::widgets::ListState;
 use netstat2::*;
 use sysinfo::{ProcessExt, System, SystemExt};
+use serde::{Deserialize, Serialize};
+extern crate confy;
 
 use maxminddb::{geoip2, Reader};
 
@@ -70,11 +72,27 @@ pub struct App<'a> {
     pub enhanced_graphics: bool,
 }
 
+#[derive(Serialize, Deserialize)]
+struct MaperickConfig {
+    path: String,
+}
+/// `MyConfig` implements `Default`
+impl ::std::default::Default for MaperickConfig {
+    fn default() -> Self { Self { path: "mmdbs/GeoLite2-City.mmdb".into() } }
+}
+
 impl<'a> App<'a> {
-    pub fn new(title: &'a str, enhanced_graphics: bool) -> App<'a> {
+    pub fn new(title: &'a str, enhanced_graphics: bool) -> App<'a, > {
+        let cfg: MaperickConfig = confy::load("maperick").unwrap();
+        
+        
+
+
         let reader = maxminddb::Reader::open_readfile(
-            "mmdbs/GeoLite2-City.mmdb",
+            cfg.path,
         ).unwrap();
+
+
 
         App {
             title,
@@ -182,7 +200,7 @@ fn get_sockets(sys: &System, addr: AddressFamilyFlags) -> Vec<SocketInfo> {
         let process_ids = si.associated_pids;
         let mut processes: Vec<ProcessInfo> = Vec::new();
         for pid in process_ids {
-            let name = match sys.get_process(pid as i32) {
+            let name = match sys.get_process((pid as i32).try_into().unwrap()) {
                 Some(pinfo) => pinfo.name(),
                 None => "",
             };

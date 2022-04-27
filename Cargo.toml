@@ -15,13 +15,16 @@ unicode-segmentation = "1.2"
 unicode-width = "0.1"
 termion = { version = "1.5", optional = true }
 crossterm = { version = "0.22", optional = true }
-serde = { version = "1", optional = true, features = ["derive"]}
+serde = { version = "1.*",  features = ["derive"]}
 tui = "0.18.0"
 rand = "0.8"
 sysinfo = "0.17.2"
 termcolor = "1.1.2"
 maxminddb = "0.17"
 public-ip = "0.2.2"
+confy = "0.4"
+
+
 
 
 [dev-dependencies]
