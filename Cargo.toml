@@ -18,7 +18,6 @@ crossterm = { version = "0.22", optional = true }
 serde = { version = "1", optional = true, features = ["derive"]}
 tui = "0.18.0"
 rand = "0.8"
-argh = "0.1"
 sysinfo = "0.17.2"
 termcolor = "1.1.2"
 maxminddb = "0.17"
