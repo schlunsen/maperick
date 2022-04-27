@@ -37,7 +37,7 @@ Dependencies
 - [x] Add maxmind geolookup
 - [ ] Add host public_ip as different marker on map
 - [ ] Add ip's to ignore
-- [ ] Replace argh with clap
+- [x] Replace argh with clap
 - [ ] Make Geoip configurable 
 - [ ] Add new tab with configuration options
 - [ ] Refactor alot of on_tick code into modules
