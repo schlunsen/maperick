@@ -89,8 +89,10 @@ impl<'a> App<'a> {
 
 
         let reader = maxminddb::Reader::open_readfile(
-            cfg.path,
+            cfg.path.clone(),
         ).unwrap();
+        
+        confy::store("maperick", cfg);        
 
 
 
