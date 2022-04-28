@@ -1,10 +1,9 @@
 # Maperick
 ![Workflow](https://github.com/schlunsen/maperick/actions/workflows/ci-tests.yml/badge.svg)
 
-Show active TCP connections on a TUI world map.
+Show active TCP connections on a TUI world map. Still WIP, but it's gonna be good.
 
 ![](screenshot.png)
-
 
 
 ## Setup
@@ -35,11 +34,12 @@ Dependencies
 - [x] Add netstat retrieval of open connections and their ip
 - [x] Error handling maxdb
 - [x] Add maxmind geolookup
+- [ ] Refactor geoip and netstats methods to modules
+- [ ] Display connected ips in table
 - [ ] Add host public_ip as different marker on map
-- [ ] Add ip's to ignore
 - [x] Replace argh with clap
-- [ ] Make Geoip configurable 
 - [ ] Add new tab with configuration options
+- [ ] Add ip's to ignore in configuration
 - [ ] Refactor alot of on_tick code into modules
 - [ ] Write simple tests
 - [ ] Add to Brew Formulae

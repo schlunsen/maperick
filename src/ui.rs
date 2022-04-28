@@ -5,10 +5,10 @@ use tui::{
     style::{Color, Modifier, Style},
     symbols,
     text::{Span, Spans},
-    widgets::canvas::{Canvas, Line, Map, MapResolution, Rectangle},
+    widgets::canvas::{Canvas, Line, Map, MapResolution},
     widgets::{
-        Axis, BarChart, Block, Borders, Cell, Chart, Dataset, Gauge, LineGauge, List, ListItem,
-        Paragraph, Row, Sparkline, Table, Tabs, Wrap,
+         Block, Borders,
+         Row, Table, Tabs,
     },
     Frame,
 };
@@ -34,13 +34,6 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         _ => {}
     };
 }
-
-
-
-
-
-
-
 
 
 fn draw_second_tab<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
