@@ -54,7 +54,7 @@ where
         } else {
             failure_style
         };
-        Row::new(vec![s.name, s.location, s.status]).style(style)
+        Row::new(vec![String::from(s.name.clone()), String::from(s.location.clone()), String::from(s.status.clone())]).style(style)
     });
     
 
@@ -94,7 +94,7 @@ where
         .marker(if app.enhanced_graphics {
             symbols::Marker::Braille
         } else {
-            symbols::Marker::Dot
+            symbols::Marker::Block
         })
         .x_bounds([-180.0, 180.0])
         .y_bounds([-90.0, 90.0]);

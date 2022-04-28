@@ -35,11 +35,11 @@ impl<'a> TabsState<'a> {
 }
 
 
-pub struct Server<'a> {
-    pub name: &'a str,
-    pub location: &'a str,
+pub struct Server {
+    pub name:  String,
+    pub location: String,
     pub coords: (f64, f64),
-    pub status: &'a str,
+    pub status: String,
 }
 
 pub struct App<'a> {
@@ -51,7 +51,7 @@ pub struct App<'a> {
     pub reader: Reader<Vec<u8>>,
     
     
-    pub servers: Vec<Server<'a>>,
+    pub servers: Vec<Server>,
     pub enhanced_graphics: bool,
 }
 
@@ -155,14 +155,13 @@ impl<'a> App<'a> {
                 Some(names) => names.get("en").unwrap_or(&""),
                 None => "",
             };
-
             
 
             self.servers.insert(count, Server {
-                name: "City",
-                location: "",
+                name: String::from(cityname),
+                location: String::from(""),
                 coords: (city.location.clone().unwrap().latitude.clone().unwrap(), city.location.clone().unwrap().longitude.clone().unwrap()),
-                status: "Up",
+                status: String::from("Up"),
             },);
 
             count = count + 1;
