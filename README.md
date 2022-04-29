@@ -46,6 +46,7 @@ Dependencies
 - [x] Refactor netstats methods to module
 - [x] Display connected ips in table
 - [ ] Refactor on_tick code into modules
+- [ ] Fix drawing of lines to exit from host location
 - [ ] Add new tab with configuration options
 - [ ] Add host public_ip as different marker on map
 - [ ] Add ip's to ignore in configuration
