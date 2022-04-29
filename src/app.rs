@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 use maperick::netstats::{self, get_sockets};
 use netstat2::*;
 use sysinfo::{System, SystemExt};
@@ -63,27 +65,33 @@ pub struct App<'a> {
 struct MaperickConfig {
     path: String,
 }
-/// `MyConfig` implements `Default`
+/// `MaperickConfig` implements `Default`
 impl ::std::default::Default for MaperickConfig {
-    fn default() -> Self { Self { path: "mmdbs/GeoLite2-City.mmdb".into() } }
+    fn default() ->Self { Self { path: "mmdbs/GeoLite2-City.mmdb".into() } }
 }
 
 impl<'a> App<'a> {
     pub fn new(title: &'a str, enhanced_graphics: bool, geodb_path: String ) -> App<'a, > {
-        let cfg: MaperickConfig = confy::load("maperick").unwrap();
-        println!("{}", geodb_path);
+        let mut cfg: MaperickConfig = confy::load("maperick").unwrap();
         
+        let reader = match geodb_path.len() {
+            0 => {
+                
+                maxminddb::Reader::open_readfile(
+                    cfg.path,
+                ).unwrap()
+            }
+            _ => {
+                cfg.path = geodb_path.clone();
+                // Store path for later use, if not path not provided as argument.
+                confy::store("maperick", cfg);  
+                maxminddb::Reader::open_readfile(
+                    geodb_path,
+                ).unwrap()
+
+            }
+        };
         
-        //let args =  Args::parse();
-
-        let reader = maxminddb::Reader::open_readfile(
-            geodb_path,
-        ).unwrap();
-        
-        confy::store("maperick", cfg);        
-
-
-
         App {
             title,
             should_quit: false,
@@ -91,7 +99,6 @@ impl<'a> App<'a> {
             show_chart: true,
             progress: 0.0,
             reader: reader,
-            
             servers: vec![],
             enhanced_graphics,
         }

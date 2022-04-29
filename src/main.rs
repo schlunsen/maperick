@@ -47,7 +47,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     let geodb_path =  match args.path {
         Some(p) => { p },
-        None => { String::from("mmdbs/GeoLite2-City.mmdb") },
+        None => { String::from("") },
      };
     
     run(tick_rate, args.enhanced_graphics, geodb_path)?;
