@@ -25,6 +25,10 @@ impl<'a> TabsState<'a> {
         self.index = (self.index + 1) % self.titles.len();
     }
 
+    pub fn help(&mut self) {
+        self.index = 2;
+    }
+
     pub fn previous(&mut self) {
         if self.index > 0 {
             self.index -= 1;
@@ -82,7 +86,7 @@ impl<'a> App<'a> {
         App {
             title,
             should_quit: false,
-            tabs: TabsState::new(vec!["Tab0"]),
+            tabs: TabsState::new(vec!["Tab0", "Tab1", "Help"]),
             show_chart: true,
             progress: 0.0,
             reader: reader,
@@ -92,6 +96,17 @@ impl<'a> App<'a> {
         }
     }
 
+    pub fn on_right(&mut self) {
+        self.tabs.next();
+    }
+    pub fn on_help(&mut self) {
+        self.tabs.help();
+    }
+
+    pub fn on_left(&mut self) {
+        self.tabs.previous();
+    }
+
     
 
     pub fn on_key(&mut self, c: char) {
@@ -99,9 +114,14 @@ impl<'a> App<'a> {
             'q' => {
                 self.should_quit = true;
             },
+            'h' => {
+                self.tabs.help();
+            },
             _ => {}
         }
     }
+    
+
     
 
     pub fn on_tick(&mut self) {
@@ -150,18 +170,16 @@ impl<'a> App<'a> {
                     continue
                 },
             };
-
             let cityname = match city.city.and_then(|c| c.names) {
                 Some(names) => names.get("en").unwrap_or(&""),
                 None => "",
             };
             
-
             self.servers.insert(count, Server {
-                name: String::from(cityname),
-                location: String::from(""),
+                name: x.unwrap().to_string(),
+                location: String::from(cityname),
                 coords: (city.location.clone().unwrap().latitude.clone().unwrap(), city.location.clone().unwrap().longitude.clone().unwrap()),
-                status: String::from("Up"),
+                status: String::from("Connected"),
             },);
 
             count = count + 1;

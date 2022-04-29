@@ -59,6 +59,8 @@ fn run_app<B: Backend>(
                 match key.code {
                     KeyCode::Char(c) => app.on_key(c),
                     KeyCode::Esc => app.on_key('q'),
+                    KeyCode::Right => app.on_right(),
+                    KeyCode::Left => app.on_left(),
                     _ => {}
                 }
             }
