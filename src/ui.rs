@@ -1,14 +1,14 @@
 use crate::app::App;
 use tui::{
     backend::Backend,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Constraint, Direction, Layout, Rect, Alignment},
     style::{Color, Modifier, Style},
     symbols,
     text::{Span, Spans},
-    widgets::canvas::{Canvas, Line, Map, MapResolution, Label},
+    widgets::canvas::{Canvas, Line, Map, MapResolution, },
     widgets::{
          Block, Borders,
-         Row, Table, Tabs,
+         Row, Table, Tabs,Paragraph, Wrap
     },
     Frame,
 };
@@ -49,7 +49,7 @@ where
     
 
     let map = Canvas::default()
-        .block(Block::default().title("Connection map").borders(Borders::NONE))
+        .block(Block::default().title("Connection map").borders(Borders::ALL))
         .paint(|ctx| {
             ctx.draw(&Map {
                 color: Color::White,
@@ -95,7 +95,27 @@ fn draw_help_tab<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
 where
     B: Backend,
 {
+    let chunks = Layout::default()
+    .constraints([Constraint::Percentage(100)].as_ref())
+    .direction(Direction::Horizontal)
+    .split(area);
+
+    let text = vec![
+    Spans::from(vec![
+        Span::styled("Help: ?", Style::default().fg(Color::LightGreen))
+    ]),
+    Spans::from(Span::styled("Move tabs: <>", Style::default().fg(Color::LightGreen))),
+    Spans::from(Span::styled("Quit: q", Style::default().fg(Color::LightGreen))),
     
+];
+
+    let p = Paragraph::new(text)
+    .block(Block::default().title("Help Menu").borders(Borders::ALL))
+    .style(Style::default().fg(Color::White).bg(Color::Black))
+    .alignment(Alignment::Left)
+    .wrap(Wrap { trim: true });
+    
+    f.render_widget(p, chunks[0]);
         
 }
 
