@@ -18,7 +18,14 @@ cargo run
 
 # build maperick
 cargo build --release
+
+# See https://github.com/P3TERX/GeoLite.mmdb for mmdb files
+./target/release/maperick -e -p GeoLite2-City.mmdb 
 ```
+
+[See this repo for mmdb files](https://github.com/P3TERX/GeoLite.mmdb)
+---
+
 
 
 Dependencies
