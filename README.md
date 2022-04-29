@@ -39,16 +39,16 @@ Dependencies
 ### Todo
 
 - [x] Base setup
+- [x] Replace argh with clap
 - [x] Add netstat retrieval of open connections and their ip
 - [x] Error handling maxdb
 - [x] Add maxmind geolookup
-- [ ] Refactor geoip and netstats methods to modules
-- [ ] Display connected ips in table
-- [ ] Add host public_ip as different marker on map
-- [x] Replace argh with clap
+- [x] Refactor netstats methods to module
+- [x] Display connected ips in table
+- [ ] Refactor on_tick code into modules
 - [ ] Add new tab with configuration options
+- [ ] Add host public_ip as different marker on map
 - [ ] Add ip's to ignore in configuration
-- [ ] Refactor alot of on_tick code into modules
 - [ ] Write simple tests
 - [ ] Add to Brew Formulae
 - [ ] Better README
