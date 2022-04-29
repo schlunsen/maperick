@@ -69,14 +69,15 @@ impl ::std::default::Default for MaperickConfig {
 }
 
 impl<'a> App<'a> {
-    pub fn new(title: &'a str, enhanced_graphics: bool) -> App<'a, > {
+    pub fn new(title: &'a str, enhanced_graphics: bool, geodb_path: String ) -> App<'a, > {
         let cfg: MaperickConfig = confy::load("maperick").unwrap();
+        println!("{}", geodb_path);
         
         
         //let args =  Args::parse();
 
         let reader = maxminddb::Reader::open_readfile(
-            cfg.path.clone(),
+            geodb_path,
         ).unwrap();
         
         confy::store("maperick", cfg);        

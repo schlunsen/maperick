@@ -14,7 +14,7 @@ use tui::{
     Terminal,
 };
 
-pub fn run(tick_rate: Duration, enhanced_graphics: bool) -> Result<(), Box<dyn Error>> {
+pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> Result<(), Box<dyn Error>> {
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -23,7 +23,7 @@ pub fn run(tick_rate: Duration, enhanced_graphics: bool) -> Result<(), Box<dyn E
     let mut terminal = Terminal::new(backend)?;
 
     // create app and run it
-    let app = App::new("Crossterm Demo", enhanced_graphics);
+    let app = App::new("Crossterm Demo", enhanced_graphics, geodb_path);
     let res = run_app(&mut terminal, app, tick_rate);
 
     // restore terminal

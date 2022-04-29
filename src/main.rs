@@ -45,6 +45,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let tick_rate = if args.tick_rate.unwrap_or(0) > 0 { Duration::from_millis(args.tick_rate.expect("")) } else { Duration::from_millis(250) };
     
-    run(tick_rate, args.enhanced_graphics)?;
+    let geodb_path =  match args.path {
+        Some(p) => { p },
+        None => { String::from("mmdbs/GeoLite2-City.mmdb") },
+     };
+    
+    run(tick_rate, args.enhanced_graphics, geodb_path)?;
     Ok(())
 }
