@@ -13,8 +13,11 @@ Show active TCP connections on a TUI world map. Still WIP, but it's gonna be goo
 git clone git@github.com:schlunsen/maperick.git
 cd maperick/
 
+# Download mmdb city file
+wget https://git.io/GeoLite2-City.mmdb
+
 # Run maperick
-cargo run 
+cargo run -- -e -p GeoLite2-City.mmdb
 
 # build maperick
 cargo build --release
