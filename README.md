@@ -4,6 +4,7 @@
 Show active TCP connections on a TUI world map. Still WIP, but it's gonna be good.
 
 ![](screenshot.png)
+![](screenshot2.png)
 
 
 ## Setup
