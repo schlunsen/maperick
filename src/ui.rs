@@ -140,12 +140,12 @@ where
         } else {
             up_style
         };
-        Row::new(vec![String::from(&s.name), String::from(&s.location), String::from(&s.status)]).style(style)
+        Row::new(vec![String::from(&s.name), String::from(&s.location), s.status.to_string(), s.count.to_string()]).style(style)
     });
 
     let table = Table::new(rows)
         .header(
-            Row::new(vec!["Server", "Location", "Status"])
+            Row::new(vec!["Server", "Location", "Status", "Count"])
                 .style(Style::default().fg(Color::Yellow))
                 .bottom_margin(1),
         )
@@ -153,6 +153,7 @@ where
         .widths(&[
             Constraint::Length(25),
             Constraint::Length(25),
+            Constraint::Length(20),
             Constraint::Length(20),
         ]);
 
