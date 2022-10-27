@@ -22,12 +22,12 @@ use std::{error::Error, time::Duration};
 #[clap(about, long_about = None)]
 pub struct Args {
     /// time in ms between two ticks.
-    #[clap(takes_value = false)]
+    
     #[clap(help = "time in ms between two ticks.")]
     #[clap(short = 't', default_missing_value = "250")]
     tick_rate: Option<u64>,
 
-    #[clap(takes_value = false)]
+    
     #[clap(help = "Path to geolite2 db")]
     #[clap(short = 'p', default_missing_value = "mmdbs/GeoLite2-City.mmdb")]
     path: Option<String>,

@@ -35,7 +35,7 @@ pub fn get_sockets(sys: &System, addr: AddressFamilyFlags) -> Vec<SocketInfo> {
         let process_ids = si.associated_pids;
         let mut processes: Vec<ProcessInfo> = Vec::new();
         for pid in process_ids {
-            let name = match sys.get_process((pid as i32).try_into().unwrap()) {
+            let name = match sys.process((pid as i32).try_into().unwrap()) {
                 Some(pinfo) => pinfo.name(),
                 None => "",
             };

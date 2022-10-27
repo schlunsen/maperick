@@ -1,8 +1,4 @@
-use std::{
-    borrow::Borrow,
-    collections::{HashMap, HashSet},
-    ops::Deref,
-};
+use std::collections::HashMap;
 
 use maperick::netstats::{self, get_sockets};
 use netstat2::*;
@@ -73,14 +69,15 @@ impl ::std::default::Default for MaperickConfig {
 
 impl<'a> App<'a> {
     pub fn new(title: &'a str, enhanced_graphics: bool, geodb_path: String) -> App<'a> {
-        let mut cfg: MaperickConfig = confy::load("maperick").unwrap();
+        let mut cfg: MaperickConfig = confy::load("maperick", None).unwrap();
 
         let reader = match geodb_path.len() {
             0 => maxminddb::Reader::open_readfile(cfg.path).unwrap(),
             _ => {
                 cfg.path = geodb_path.clone();
                 // Store path for later use, if not path not provided as argument.
-                confy::store("maperick", cfg);
+                confy::store("maperick", None, cfg).expect("Couldn't store config");
+
                 maxminddb::Reader::open_readfile(geodb_path).unwrap()
             }
         };
@@ -175,7 +172,7 @@ impl<'a> App<'a> {
                 None => "",
             };
 
-            let connectionCount = remote_addrs_map.get(&x.unwrap().to_string()).unwrap();
+            let connection_count = remote_addrs_map.get(&x.unwrap().to_string()).unwrap();
 
             self.servers.insert(
                 count,
@@ -187,7 +184,7 @@ impl<'a> App<'a> {
                         city.location.clone().unwrap().longitude.clone().unwrap(),
                     ),
                     status: String::from("Connected"),
-                    count: *connectionCount,
+                    count: *connection_count,
                 },
             );
 

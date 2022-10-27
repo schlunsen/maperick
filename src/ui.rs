@@ -2,7 +2,7 @@ use crate::app::App;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect, Alignment},
-    style::{Color, Modifier, Style},
+    style::{Color, Style},
     symbols,
     text::{Span, Spans},
     widgets::canvas::{Canvas, Line, Map, MapResolution, },
@@ -91,7 +91,7 @@ where
     f.render_widget(map, chunks[0]);
 }
 
-fn draw_help_tab<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
+fn draw_help_tab<B>(f: &mut Frame<B>, _app: &mut App, area: Rect)
 where
     B: Backend,
 {
@@ -131,9 +131,7 @@ where
     
 
     let up_style = Style::default().fg(Color::Green);
-    let failure_style = Style::default()
-        .fg(Color::Red)
-        .add_modifier(Modifier::RAPID_BLINK | Modifier::CROSSED_OUT);
+    
     let rows = app.servers.iter().map(|s| {
         let style = if s.status == "Connected" {
             up_style
