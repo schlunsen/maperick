@@ -472,6 +472,72 @@ body {
 }
 
 /* ============================================
+   STICKY HEADER
+   ============================================ */
+.sticky-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 32px;
+  background: rgba(10, 10, 26, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.sticky-header--visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sticky-header__logo {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #ffffff;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.sticky-header__logo:hover {
+  color: var(--accent-green);
+}
+
+.sticky-header__github {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.sticky-header__github:hover {
+  color: var(--accent-green);
+}
+
+/* ============================================
+   TYPING CURSOR
+   ============================================ */
+.typing-cursor {
+  display: inline;
+  color: var(--accent-green);
+  animation: blink 1s step-end infinite;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* ============================================
    FADE-IN ANIMATIONS
    ============================================ */
 .fade-in {

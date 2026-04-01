@@ -1,14 +1,11 @@
 use crate::{app::App, ui};
+use ratatui::{backend::TermionBackend, Terminal};
 use std::{io, sync::mpsc, thread, time::Duration};
 use termion::{
     event::Key,
     input::{MouseTerminal, TermRead},
     raw::IntoRawMode,
     screen::AlternateScreen,
-};
-use ratatui::{
-    backend::TermionBackend,
-    Terminal,
 };
 
 pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> anyhow::Result<()> {

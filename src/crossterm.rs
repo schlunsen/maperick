@@ -4,13 +4,10 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use ratatui::{backend::CrosstermBackend, Terminal};
 use std::{
     io,
     time::{Duration, Instant},
-};
-use ratatui::{
-    backend::CrosstermBackend,
-    Terminal,
 };
 
 pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> anyhow::Result<()> {

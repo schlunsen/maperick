@@ -80,7 +80,7 @@ function initScrollFadeIns() {
 function initHeroParallax() {
   const hero = document.querySelector('.hero');
   const heroContent = document.querySelector('.hero-content');
-  const globe = document.querySelector('.globe-container');
+  const globe = document.querySelector('#globe-container');
   if (!hero) return;
 
   const heroHeight = () => hero.offsetHeight;

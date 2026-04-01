@@ -39,7 +39,11 @@ fn draw_first_tab(f: &mut Frame, app: &mut App, area: Rect) {
         .split(area);
 
     let map = Canvas::default()
-        .block(Block::default().title("Connection map").borders(Borders::ALL))
+        .block(
+            Block::default()
+                .title("Connection map")
+                .borders(Borders::ALL),
+        )
         .paint(|ctx| {
             ctx.draw(&Map {
                 color: Color::White,

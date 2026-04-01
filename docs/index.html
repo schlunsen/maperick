@@ -101,7 +101,7 @@
           <span class="terminal-title">maperick &mdash; ~/projects</span>
         </div>
         <div class="terminal-body">
-          <img src="../.github/screenshot.png" alt="Maperick TUI showing a world map with active TCP connections, connection table, and network statistics" class="screenshot">
+          <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/.github/screenshot.png" alt="Maperick TUI showing a world map with active TCP connections, connection table, and network statistics" class="screenshot">
         </div>
       </div>
       <p class="caption">TCP connections visualized on a world map with real-time statistics and connection details.</p>
@@ -178,12 +178,39 @@
     </div>
   </footer>
 
-  <!-- Three.js Globe -->
-  <script type="module" src="js/globe.js"></script>
+  <!-- Main entry: globe + animations -->
+  <script type="module">
+    import { initGlobe } from './js/globe.js';
+    import { initAnimations, createGlobeScrollHandler } from './js/animations.js';
 
-  <!-- Scroll-triggered fade-in animations -->
-  <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Create canvas inside the globe container
+      const container = document.getElementById('globe-container');
+      if (container) {
+        const canvas = document.createElement('canvas');
+        canvas.id = 'globe-canvas';
+        container.appendChild(canvas);
+        const globe = initGlobe(canvas);
+
+        // Wire globe scroll handler
+        if (globe) {
+          const globeScroll = createGlobeScrollHandler({
+            globeElement: container,
+            setRotationSpeed: (factor) => {
+              // Adjust the auto-rotation based on scroll
+              globe.globeGroup.userData.rotationFactor = factor;
+            },
+          });
+          window.addEventListener('scroll', () => {
+            globeScroll(window.scrollY);
+          }, { passive: true });
+        }
+      }
+
+      // Init all scroll animations
+      initAnimations();
+
+      // Also handle the .fade-in elements (from CSS agent)
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -191,7 +218,6 @@
           }
         });
       }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
       document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
     });
   </script>

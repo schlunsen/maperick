@@ -45,6 +45,7 @@ pub struct App<'a> {
     pub title: &'a str,
     pub should_quit: bool,
     pub tabs: TabsState<'a>,
+    #[allow(dead_code)]
     pub progress: f64,
     pub reader: Reader<Vec<u8>>,
     pub servers: Vec<Server>,
@@ -70,19 +71,21 @@ impl<'a> App<'a> {
         enhanced_graphics: bool,
         geodb_path: String,
     ) -> anyhow::Result<App<'a>> {
-        let mut cfg: MaperickConfig = confy::load("maperick", None)
-            .unwrap_or_else(|_| MaperickConfig::default());
+        let mut cfg: MaperickConfig =
+            confy::load("maperick", None).unwrap_or_else(|_| MaperickConfig::default());
 
         let reader = if geodb_path.is_empty() {
-            maxminddb::Reader::open_readfile(&cfg.path)
-                .map_err(|e| anyhow::anyhow!("Failed to open GeoIP database at '{}': {}", cfg.path, e))?
+            maxminddb::Reader::open_readfile(&cfg.path).map_err(|e| {
+                anyhow::anyhow!("Failed to open GeoIP database at '{}': {}", cfg.path, e)
+            })?
         } else {
             cfg.path = geodb_path.clone();
             if let Err(e) = confy::store("maperick", None, &cfg) {
                 eprintln!("Warning: couldn't store config: {}", e);
             }
-            maxminddb::Reader::open_readfile(&geodb_path)
-                .map_err(|e| anyhow::anyhow!("Failed to open GeoIP database at '{}': {}", geodb_path, e))?
+            maxminddb::Reader::open_readfile(&geodb_path).map_err(|e| {
+                anyhow::anyhow!("Failed to open GeoIP database at '{}': {}", geodb_path, e)
+            })?
         };
 
         Ok(App {
