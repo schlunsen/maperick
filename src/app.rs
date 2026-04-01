@@ -158,6 +158,7 @@ impl<'a> App<'a> {
             .and_then(|i| self.servers.get(i))
     }
 
+    #[allow(dead_code)]
     pub fn selected_server_history(&self) -> Option<&ServerHistory> {
         self.selected_server()
             .and_then(|s| self.server_history.get(&s.name))
@@ -382,15 +383,9 @@ fn navigate_up(state: &mut TableState, len: usize) {
 
 fn navigate_down(state: &mut TableState, len: usize) {
     let i = match state.selected() {
-        Some(i) => {
-            if len == 0 {
-                0
-            } else if i >= len - 1 {
-                0
-            } else {
-                i + 1
-            }
-        }
+        Some(_) if len == 0 => 0,
+        Some(i) if i >= len - 1 => 0,
+        Some(i) => i + 1,
         None => 0,
     };
     state.select(Some(i));

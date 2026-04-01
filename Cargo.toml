@@ -14,7 +14,7 @@ default = ["crossterm"]
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
-netstat2 = "0.9"
+netstat2 = "0.11"
 termion = { version = "4", optional = true }
 crossterm = { version = "0.28", optional = true }
 ratatui = "0.29"
