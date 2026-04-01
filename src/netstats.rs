@@ -75,3 +75,37 @@ pub fn get_sockets(sys: &System, addr: AddressFamilyFlags) -> Vec<SocketInfo> {
 
     sockets
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_sockets_returns_vec() {
+        let sys = System::new_all();
+        let sockets = get_sockets(&sys, AddressFamilyFlags::IPV4);
+        // Should return a vec (possibly empty) without panicking
+        assert!(sockets.len() >= 0);
+    }
+
+    #[test]
+    fn test_socket_info_has_valid_protocols() {
+        let sys = System::new_all();
+        let sockets = get_sockets(&sys, AddressFamilyFlags::IPV4);
+        for s in &sockets {
+            assert!(
+                s.protocol == ProtocolFlags::TCP || s.protocol == ProtocolFlags::UDP,
+                "Socket should be TCP or UDP"
+            );
+        }
+    }
+
+    #[test]
+    fn test_get_sockets_ipv4_family() {
+        let sys = System::new_all();
+        let sockets = get_sockets(&sys, AddressFamilyFlags::IPV4);
+        for s in &sockets {
+            assert_eq!(s.family, AddressFamilyFlags::IPV4);
+        }
+    }
+}

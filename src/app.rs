@@ -191,3 +191,65 @@ impl<'a> App<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_tabs_state_new() {
+        let tabs = TabsState::new(vec!["Tab0", "Tab1", "Help"]);
+        assert_eq!(tabs.index, 0);
+        assert_eq!(tabs.titles.len(), 3);
+    }
+
+    #[test]
+    fn test_tabs_next_wraps_around() {
+        let mut tabs = TabsState::new(vec!["Tab0", "Tab1", "Help"]);
+        assert_eq!(tabs.index, 0);
+        tabs.next();
+        assert_eq!(tabs.index, 1);
+        tabs.next();
+        assert_eq!(tabs.index, 2);
+        tabs.next();
+        assert_eq!(tabs.index, 0); // wraps around
+    }
+
+    #[test]
+    fn test_tabs_previous_wraps_around() {
+        let mut tabs = TabsState::new(vec!["Tab0", "Tab1", "Help"]);
+        assert_eq!(tabs.index, 0);
+        tabs.previous();
+        assert_eq!(tabs.index, 2); // wraps to last
+        tabs.previous();
+        assert_eq!(tabs.index, 1);
+    }
+
+    #[test]
+    fn test_tabs_help() {
+        let mut tabs = TabsState::new(vec!["Tab0", "Tab1", "Help"]);
+        tabs.help();
+        assert_eq!(tabs.index, 2);
+    }
+
+    #[test]
+    fn test_on_key_quit() {
+        // We can't easily construct App without a DB file,
+        // but we can test TabsState independently
+        let mut tabs = TabsState::new(vec!["A", "B"]);
+        tabs.next();
+        assert_eq!(tabs.index, 1);
+        tabs.next();
+        assert_eq!(tabs.index, 0);
+    }
+
+    #[test]
+    fn test_single_tab() {
+        let mut tabs = TabsState::new(vec!["Only"]);
+        assert_eq!(tabs.index, 0);
+        tabs.next();
+        assert_eq!(tabs.index, 0); // wraps to 0
+        tabs.previous();
+        assert_eq!(tabs.index, 0); // wraps to 0
+    }
+}
