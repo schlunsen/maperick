@@ -4,7 +4,6 @@ import SceneKit
 struct GlobeView: NSViewRepresentable {
     var scene: GlobeScene
     var allowsInteraction: Bool = false
-    var autoRotates: Bool = true
 
     func makeNSView(context: Context) -> GlobeSceneView {
         let view = GlobeSceneView()
@@ -25,12 +24,6 @@ struct GlobeView: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: GlobeSceneView, context: Context) {}
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-
-    class Coordinator: NSObject {}
 }
 
 /// Custom SCNView that handles scroll-zoom and drag-rotate without SceneKit's camera controller
@@ -50,8 +43,12 @@ class GlobeSceneView: SCNView {
     private var dragInertiaY: CGFloat = 0
     private var inertiaTimer: Timer?
 
-    private var globeNode: SCNNode? {
-        scene?.rootNode.childNode(withName: "globe", recursively: false)
+    private var cachedGlobe: SCNNode?
+    private func globeNode() -> SCNNode? {
+        if let cached = cachedGlobe { return cached }
+        let node = scene?.rootNode.childNode(withName: "globe", recursively: false)
+        cachedGlobe = node
+        return node
     }
 
     /// Finds and caches the camera node on first access
@@ -138,7 +135,7 @@ class GlobeSceneView: SCNView {
             super.mouseDragged(with: event)
             return
         }
-        guard let globe = globeNode else { return }
+        guard let globe = globeNode() else { return }
 
         let currentPoint = convert(event.locationInWindow, from: nil)
         let dx = currentPoint.x - lastPoint.x
@@ -173,7 +170,7 @@ class GlobeSceneView: SCNView {
     private func startInertia() {
         inertiaTimer?.invalidate()
         inertiaTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { [weak self] timer in
-            guard let self, let globe = self.globeNode else {
+            guard let self, let globe = self.globeNode() else {
                 timer.invalidate()
                 return
             }

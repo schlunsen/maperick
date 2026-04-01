@@ -17,7 +17,7 @@ struct MaperickApp: App {
             GlobeWindowView(state: state)
                 .frame(minWidth: 700, minHeight: 550)
         }
-        .windowStyle(.hiddenTitleBar)
+        .windowStyle(.automatic)
         .windowResizability(.contentSize)
         .defaultSize(width: 1100, height: 850)
         .defaultPosition(.topTrailing)

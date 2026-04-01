@@ -15,7 +15,7 @@ struct MenuBarPopoverView: View {
             Divider()
 
             // Mini 3D Globe
-            GlobeView(scene: state.monitor.globeScene, allowsInteraction: true, autoRotates: true)
+            GlobeView(scene: state.monitor.globeScene, allowsInteraction: true)
                 .frame(width: 280, height: 180)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .padding(8)

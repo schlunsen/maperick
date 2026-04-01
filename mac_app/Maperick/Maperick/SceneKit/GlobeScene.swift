@@ -766,11 +766,13 @@ class GlobeScene: SCNScene {
         // --- Animated pulse along the beam (subtle brightness wave) ---
         addBeamPulse(to: coreNode, duration: 3.0 + Double.random(in: 0...1.0))
 
-        // --- Traveling particles (multiple, staggered, smoothly interpolated) ---
+        // --- Traveling particles (multiple, staggered, bidirectional) ---
         let particleCount = arcDistance > 3.0 ? 3 : 2
         for i in 0..<particleCount {
             let delay = Double(i) * (1.2 + Double.random(in: 0...0.5))
-            addTravelingParticle(to: containerNode, arcPoints: arcPoints, color: color, initialDelay: delay)
+            // Alternate direction: even = outbound (host→server), odd = inbound (server→host)
+            let reversed = (i % 2 == 1)
+            addTravelingParticle(to: containerNode, arcPoints: arcPoints, color: color, initialDelay: delay, reversed: reversed)
         }
 
         return containerNode
@@ -864,7 +866,8 @@ class GlobeScene: SCNScene {
     }
 
     /// Adds a smoothly interpolated glowing particle that travels along the arc path with a comet tail
-    private func addTravelingParticle(to parent: SCNNode, arcPoints: [simd_float3], color: NSColor, initialDelay: TimeInterval) {
+    /// When reversed=true, the particle travels from server→host (inbound data)
+    private func addTravelingParticle(to parent: SCNNode, arcPoints: [simd_float3], color: NSColor, initialDelay: TimeInterval, reversed: Bool = false) {
         // Main bright particle
         let sphere = SCNSphere(radius: 0.022)
         sphere.segmentCount = 12
@@ -925,12 +928,17 @@ class GlobeScene: SCNScene {
             let t = Float(elapsed / CGFloat(travelDuration))
 
             // Ease-in-out cubic for natural acceleration/deceleration
-            let eased: Float
+            var eased: Float
             if t < 0.5 {
                 eased = 4.0 * t * t * t
             } else {
                 let f = (2.0 * t - 2.0)
                 eased = 0.5 * f * f * f + 1.0
+            }
+
+            // Reverse direction for inbound traffic (server → host)
+            if reversed {
+                eased = 1.0 - eased
             }
 
             // Smooth position interpolation
@@ -943,8 +951,10 @@ class GlobeScene: SCNScene {
             node.opacity = CGFloat(smoothFade) * 0.85
 
             // Update trailing particles with position history (delayed positions)
+            // Tail trails behind the direction of travel
+            let tailSign: Float = reversed ? -1.0 : 1.0
             for (j, tailNode) in tailNodes.enumerated() {
-                let tailT = max(0, eased - Float(j + 1) * 0.035)
+                let tailT = max(0, min(1, eased - tailSign * Float(j + 1) * 0.035))
                 let tailPos = self?.interpolateArcPoint(points, at: tailT) ?? points[0]
                 tailNode.position = SCNVector3(CGFloat(tailPos.x), CGFloat(tailPos.y), CGFloat(tailPos.z))
                 let tailFade = max(0, fadeEnvelope - Float(j + 1) * 0.15)

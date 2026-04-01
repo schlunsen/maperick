@@ -7,15 +7,11 @@ private struct WindowAccessor: NSViewRepresentable {
         let view = NSView()
         DispatchQueue.main.async {
             guard let window = view.window else { return }
-            // Hide native close/minimize/zoom buttons
-            window.standardWindowButton(.closeButton)?.isHidden = true
-            window.standardWindowButton(.miniaturizeButton)?.isHidden = true
-            window.standardWindowButton(.zoomButton)?.isHidden = true
-            // Make the title bar area transparent and blend with content
-            window.titlebarAppearsTransparent = true
-            window.titleVisibility = .hidden
+            // Remove title bar entirely — no extra space above content
+            window.styleMask.remove(.titled)
+            window.styleMask.insert(.resizable)
+            window.styleMask.insert(.fullSizeContentView)
             window.isMovableByWindowBackground = true
-            // Dark background for the title bar area
             window.backgroundColor = NSColor(red: 0.05, green: 0.05, blue: 0.09, alpha: 1.0)
 
             // Position window in top-right corner, just below menu bar
@@ -33,7 +29,7 @@ private struct WindowAccessor: NSViewRepresentable {
 }
 
 struct GlobeWindowView: View {
-    @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.dismiss) private var dismiss
     var state: ConnectionState
     @State private var selectedTab: Int = 0
     @State private var selectedProcess: String? = nil
@@ -46,7 +42,7 @@ struct GlobeWindowView: View {
             HStack(spacing: 10) {
                 // Close button
                 Button(action: {
-                    dismissWindow(id: "globe-window")
+                    NSApp.keyWindow?.close()
                 }) {
                     Circle()
                         .fill(isHoveringClose ? Color.red : Color.red.opacity(0.7))
@@ -123,7 +119,7 @@ struct GlobeWindowView: View {
             Divider()
 
             // 3D Globe - takes most of the space
-            GlobeView(scene: state.monitor.globeScene, allowsInteraction: true, autoRotates: true)
+            GlobeView(scene: state.monitor.globeScene, allowsInteraction: true)
                 .frame(minHeight: 400)
                 .onAppear {
                     // Zoom out a notch for the big window view
