@@ -5,3 +5,11 @@
 .vscode/
 *.bk
 *.orig
+.claude/
+
+# Xcode
+*.xcuserdata/
+xcuserdata/
+DerivedData/
+*.xcscmblueprint
+*.xccheckout

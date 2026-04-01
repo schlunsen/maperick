@@ -55,10 +55,6 @@ class GlobeScene: SCNScene {
         setupLighting()
         setupCamera()
 
-        // Delay auto-rotate so the globe stays still initially (user location will override)
-        let wait = SCNAction.wait(duration: 13.0)
-        let rotateAction = SCNAction.rotateBy(x: 0, y: 0.3, z: 0, duration: 10.0)
-        globeNode.runAction(SCNAction.sequence([wait, SCNAction.repeatForever(rotateAction)]), forKey: "autoRotate")
     }
 
     // MARK: - Globe Node
@@ -270,12 +266,6 @@ class GlobeScene: SCNScene {
 
         print("[Maperick] Rotating globe to face user: lat=\(userLatitude) lon=\(userLongitude) → eulerY=\(targetY) eulerX=\(targetX)")
 
-        // Resume slow auto-rotate after 13 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 13.0) { [weak self] in
-            guard let self, !self.isFollowMode else { return }
-            let rotateAction = SCNAction.rotateBy(x: 0, y: 0.3, z: 0, duration: 10.0)
-            self.globeNode.runAction(SCNAction.repeatForever(rotateAction), forKey: "autoRotate")
-        }
     }
 
     /// Creates a distinct pulsing beacon at the user's location — hollow rings on the surface
@@ -338,9 +328,7 @@ class GlobeScene: SCNScene {
             activityBuffer.removeAll()
             currentFollowTarget = nil
 
-            // Resume idle auto-rotation
-            let rotateAction = SCNAction.rotateBy(x: 0, y: 0.3, z: 0, duration: 10.0)
-            globeNode.runAction(SCNAction.repeatForever(rotateAction), forKey: "autoRotate")
+            // Stopped follow mode
         }
     }
 
@@ -706,7 +694,26 @@ class GlobeScene: SCNScene {
 
     // MARK: - Arc Beams
 
-    /// Creates a curved arc beam from one lat/lon to another, with an animated traveling particle
+    /// Smoothly interpolates between arc points using cubic Catmull-Rom style interpolation
+    private func interpolateArcPoint(_ points: [simd_float3], at t: Float) -> simd_float3 {
+        let count = points.count
+        guard count > 1 else { return points.first ?? simd_float3(0, 0, 0) }
+
+        let clampedT = max(0, min(1, t))
+        let scaledT = clampedT * Float(count - 1)
+        let index = min(Int(scaledT), count - 2)
+        let frac = scaledT - Float(index)
+
+        // Smooth hermite interpolation for buttery motion
+        let smoothFrac = frac * frac * (3.0 - 2.0 * frac)
+
+        let p0 = points[index]
+        let p1 = points[min(index + 1, count - 1)]
+
+        return p0 + (p1 - p0) * smoothFrac
+    }
+
+    /// Creates a curved arc beam from one lat/lon to another, with animated traveling particles and glow
     private func createArcBeam(fromLat: Double, fromLon: Double, toLat: Double, toLon: Double, color: NSColor) -> SCNNode {
         let containerNode = SCNNode()
         containerNode.name = "arcBeam"
@@ -714,29 +721,64 @@ class GlobeScene: SCNScene {
         let startPos = latLonToPosition(latitude: fromLat, longitude: fromLon)
         let endPos = latLonToPosition(latitude: toLat, longitude: toLon)
 
-        // Compute arc points via great-circle slerp with elevation
-        let segments = 48
+        // Compute arc points via great-circle slerp with elevation — high segment count for smoothness
+        let segments = 96
         let s = simd_float3(Float(startPos.x), Float(startPos.y), Float(startPos.z))
         let e = simd_float3(Float(endPos.x), Float(endPos.y), Float(endPos.z))
         let arcDistance = simd_length(e - s)
 
-        // Height of the arc proportional to distance (farther = higher arc) — subtle curves
-        let maxArcHeight = Float(globeRadius) * 0.03 + arcDistance * 0.06
+        // Height of the arc proportional to distance (farther = higher arc) — elegant curves
+        let maxArcHeight = Float(globeRadius) * 0.04 + arcDistance * 0.08
 
         var arcPoints: [simd_float3] = []
 
         for i in 0...segments {
             let t = Float(i) / Float(segments)
-            // Slerp on the sphere surface
             let point = slerpOnSphere(s, e, t: t)
-            // Elevate by sine curve — peaked at midpoint
+            // Smooth sine elevation — peaked at midpoint
             let elevation = maxArcHeight * sin(t * .pi)
             let elevated = simd_normalize(point) * (simd_length(point) + elevation)
             arcPoints.append(elevated)
         }
 
-        // Build ribbon geometry from arc points — thin and airy
-        let ribbonWidth: Float = 0.006
+        // --- Layer 1: Soft wide glow ribbon (background haze) ---
+        let glowNode = buildRibbonNode(
+            arcPoints: arcPoints, segments: segments, color: color,
+            ribbonWidth: 0.022, baseAlpha: 0.06, emissionAlpha: 0.04
+        )
+        glowNode.opacity = 0.5
+        containerNode.addChildNode(glowNode)
+
+        // --- Layer 2: Core beam ribbon (sharp, bright center) ---
+        let coreNode = buildRibbonNode(
+            arcPoints: arcPoints, segments: segments, color: color,
+            ribbonWidth: 0.005, baseAlpha: 0.35, emissionAlpha: 0.25
+        )
+        coreNode.opacity = 0.8
+        containerNode.addChildNode(coreNode)
+
+        // --- Animated beam entrance: draw-on effect ---
+        containerNode.opacity = 0
+        let fadeIn = SCNAction.fadeIn(duration: 0.6)
+        fadeIn.timingMode = .easeOut
+        containerNode.runAction(fadeIn)
+
+        // --- Animated pulse along the beam (subtle brightness wave) ---
+        addBeamPulse(to: coreNode, duration: 3.0 + Double.random(in: 0...1.0))
+
+        // --- Traveling particles (multiple, staggered, smoothly interpolated) ---
+        let particleCount = arcDistance > 3.0 ? 3 : 2
+        for i in 0..<particleCount {
+            let delay = Double(i) * (1.2 + Double.random(in: 0...0.5))
+            addTravelingParticle(to: containerNode, arcPoints: arcPoints, color: color, initialDelay: delay)
+        }
+
+        return containerNode
+    }
+
+    /// Builds a ribbon geometry node from arc points — reusable for glow and core layers
+    private func buildRibbonNode(arcPoints: [simd_float3], segments: Int, color: NSColor,
+                                  ribbonWidth: Float, baseAlpha: Float, emissionAlpha: Float) -> SCNNode {
         var ribbonVerts: [Float] = []
         var ribbonColors: [Float] = []
 
@@ -744,12 +786,10 @@ class GlobeScene: SCNScene {
             let pos = arcPoints[i]
             let radial = simd_normalize(pos)
 
-            // Tangent along the arc
             let prev = i > 0 ? arcPoints[i - 1] : pos
             let next = i < segments ? arcPoints[i + 1] : pos
             let tangent = simd_normalize(next - prev)
 
-            // Perpendicular to both tangent and radial direction
             var perp = simd_cross(tangent, radial)
             let perpLen = simd_length(perp)
             if perpLen > 0.0001 {
@@ -758,7 +798,6 @@ class GlobeScene: SCNScene {
                 perp = simd_float3(ribbonWidth, 0, 0)
             }
 
-            // Two vertices per segment point (left and right of ribbon)
             ribbonVerts.append(pos.x + perp.x)
             ribbonVerts.append(pos.y + perp.y)
             ribbonVerts.append(pos.z + perp.z)
@@ -767,10 +806,12 @@ class GlobeScene: SCNScene {
             ribbonVerts.append(pos.y - perp.y)
             ribbonVerts.append(pos.z - perp.z)
 
-            // Fade alpha at ends, soft in middle — airy look
+            // Smooth fade at endpoints using smoothstep-like curve
             let t = Float(i) / Float(segments)
-            let alpha = sin(t * .pi) * 0.2
-            // Color for both vertices
+            let edgeFade = sin(t * .pi)
+            let smoothEdge = edgeFade * edgeFade  // Squared sine for softer fade
+            let alpha = smoothEdge * baseAlpha
+
             let r = Float(color.redComponent)
             let g = Float(color.greenComponent)
             let b = Float(color.blueComponent)
@@ -778,7 +819,6 @@ class GlobeScene: SCNScene {
             ribbonColors.append(contentsOf: [r, g, b, alpha])
         }
 
-        // Triangle strip indices
         var indices: [UInt16] = []
         for i in 0..<segments {
             let base = UInt16(i * 2)
@@ -801,62 +841,127 @@ class GlobeScene: SCNScene {
 
         let geometry = SCNGeometry(sources: [vertexSource, colorSource], elements: [element])
         let mat = SCNMaterial()
-        mat.diffuse.contents = NSColor.white.withAlphaComponent(0.5)
-        mat.emission.contents = color.withAlphaComponent(0.15)
+        mat.diffuse.contents = NSColor.white.withAlphaComponent(CGFloat(baseAlpha))
+        mat.emission.contents = color.withAlphaComponent(CGFloat(emissionAlpha))
         mat.blendMode = .add
         mat.lightingModel = .constant
         mat.isDoubleSided = true
         mat.writesToDepthBuffer = false
         geometry.materials = [mat]
 
-        let ribbonNode = SCNNode(geometry: geometry)
-        ribbonNode.opacity = 0.6
-        containerNode.addChildNode(ribbonNode)
-
-        // Animated traveling particle (small, subtle)
-        addTravelingParticle(to: containerNode, arcPoints: arcPoints, color: color)
-
-        return containerNode
+        return SCNNode(geometry: geometry)
     }
 
-    /// Adds a small glowing sphere that repeatedly travels along the arc path
-    private func addTravelingParticle(to parent: SCNNode, arcPoints: [simd_float3], color: NSColor) {
-        let sphere = SCNSphere(radius: 0.025)
-        sphere.segmentCount = 8
+    /// Adds a subtle pulsing brightness animation to a beam node
+    private func addBeamPulse(to node: SCNNode, duration: TimeInterval) {
+        let pulse = SCNAction.customAction(duration: duration) { node, elapsed in
+            let t = elapsed / CGFloat(duration)
+            // Gentle sine-wave opacity oscillation
+            let wave = 0.7 + 0.3 * sin(t * CGFloat.pi * 2.0)
+            node.opacity = CGFloat(wave) * 0.8
+        }
+        node.runAction(SCNAction.repeatForever(pulse))
+    }
+
+    /// Adds a smoothly interpolated glowing particle that travels along the arc path with a comet tail
+    private func addTravelingParticle(to parent: SCNNode, arcPoints: [simd_float3], color: NSColor, initialDelay: TimeInterval) {
+        // Main bright particle
+        let sphere = SCNSphere(radius: 0.022)
+        sphere.segmentCount = 12
         let mat = SCNMaterial()
-        mat.diffuse.contents = NSColor.white.withAlphaComponent(0.6)
-        mat.emission.contents = color.withAlphaComponent(0.5)
-        mat.emission.intensity = 1.0
+        mat.diffuse.contents = NSColor.white.withAlphaComponent(0.9)
+        mat.emission.contents = color.withAlphaComponent(0.8)
+        mat.emission.intensity = 1.5
         mat.blendMode = .add
         mat.lightingModel = .constant
         sphere.materials = [mat]
 
         let particleNode = SCNNode(geometry: sphere)
         particleNode.opacity = 0
+
+        // Soft glow halo around the particle
+        let halo = SCNSphere(radius: 0.06)
+        halo.segmentCount = 8
+        let haloMat = SCNMaterial()
+        haloMat.diffuse.contents = color.withAlphaComponent(0.15)
+        haloMat.emission.contents = color.withAlphaComponent(0.2)
+        haloMat.emission.intensity = 1.0
+        haloMat.blendMode = .add
+        haloMat.lightingModel = .constant
+        haloMat.writesToDepthBuffer = false
+        halo.materials = [haloMat]
+
+        let haloNode = SCNNode(geometry: halo)
+        particleNode.addChildNode(haloNode)
+
+        // Small trailing particles (comet tail effect)
+        let tailCount = 4
+        var tailNodes: [SCNNode] = []
+        for j in 0..<tailCount {
+            let tailSphere = SCNSphere(radius: CGFloat(0.012 - Double(j) * 0.002))
+            tailSphere.segmentCount = 6
+            let tailMat = SCNMaterial()
+            tailMat.diffuse.contents = color.withAlphaComponent(CGFloat(0.4 - Double(j) * 0.08))
+            tailMat.emission.contents = color.withAlphaComponent(CGFloat(0.3 - Double(j) * 0.06))
+            tailMat.emission.intensity = 0.8
+            tailMat.blendMode = .add
+            tailMat.lightingModel = .constant
+            tailMat.writesToDepthBuffer = false
+            tailSphere.materials = [tailMat]
+
+            let tailNode = SCNNode(geometry: tailSphere)
+            tailNode.opacity = 0
+            parent.addChildNode(tailNode)
+            tailNodes.append(tailNode)
+        }
+
         parent.addChildNode(particleNode)
 
-        let travelDuration: TimeInterval = 2.5 + Double.random(in: 0...1.5)
-        let pauseDuration: TimeInterval = Double.random(in: 1.0...3.0)
-        let points = arcPoints // capture
+        let travelDuration: TimeInterval = 2.0 + Double.random(in: 0...1.0)
+        let pauseDuration: TimeInterval = Double.random(in: 0.8...2.5)
+        let points = arcPoints
 
-        let travel = SCNAction.customAction(duration: travelDuration) { node, elapsed in
-            let t = elapsed / CGFloat(travelDuration)
-            let index = min(Int(t * CGFloat(points.count - 1)), points.count - 1)
-            let pos = points[index]
+        let travel = SCNAction.customAction(duration: travelDuration) { [weak self] node, elapsed in
+            let t = Float(elapsed / CGFloat(travelDuration))
+
+            // Ease-in-out cubic for natural acceleration/deceleration
+            let eased: Float
+            if t < 0.5 {
+                eased = 4.0 * t * t * t
+            } else {
+                let f = (2.0 * t - 2.0)
+                eased = 0.5 * f * f * f + 1.0
+            }
+
+            // Smooth position interpolation
+            let pos = self?.interpolateArcPoint(points, at: eased) ?? points[0]
             node.position = SCNVector3(CGFloat(pos.x), CGFloat(pos.y), CGFloat(pos.z))
 
-            // Gentle fade in/out
-            let fadeIn = min(t * 3.0, 1.0)
-            let fadeOut = min((1.0 - t) * 3.0, 1.0)
-            node.opacity = fadeIn * fadeOut * 0.5
+            // Smooth fade in/out with sine curve — no hard edges
+            let fadeEnvelope = sin(Float(t) * .pi)
+            let smoothFade = fadeEnvelope * fadeEnvelope // Squared for softer transitions
+            node.opacity = CGFloat(smoothFade) * 0.85
+
+            // Update trailing particles with position history (delayed positions)
+            for (j, tailNode) in tailNodes.enumerated() {
+                let tailT = max(0, eased - Float(j + 1) * 0.035)
+                let tailPos = self?.interpolateArcPoint(points, at: tailT) ?? points[0]
+                tailNode.position = SCNVector3(CGFloat(tailPos.x), CGFloat(tailPos.y), CGFloat(tailPos.z))
+                let tailFade = max(0, fadeEnvelope - Float(j + 1) * 0.15)
+                tailNode.opacity = CGFloat(tailFade * tailFade) * CGFloat(0.5 - Double(j) * 0.1)
+            }
         }
 
         let hide = SCNAction.customAction(duration: 0.01) { node, _ in
             node.opacity = 0
+            for tailNode in tailNodes {
+                tailNode.opacity = 0
+            }
         }
         let pause = SCNAction.wait(duration: pauseDuration)
+        let initialWait = SCNAction.wait(duration: initialDelay)
 
-        particleNode.runAction(SCNAction.repeatForever(SCNAction.sequence([travel, hide, pause])))
+        particleNode.runAction(SCNAction.sequence([initialWait, SCNAction.repeatForever(SCNAction.sequence([travel, hide, pause]))]))
     }
 
     /// Spherical linear interpolation between two points on the globe surface
@@ -920,9 +1025,6 @@ class GlobeScene: SCNScene {
     /// Also adjusts zoom to fit the spread of connections.
     func focusOnServers(_ servers: [ServerInfo]) {
         guard !servers.isEmpty else { return }
-
-        // Stop auto-rotation
-        globeNode.removeAction(forKey: "autoRotate")
 
         // Compute weighted centroid in 3D (avoids lat/lon wraparound issues)
         var wx: Double = 0, wy: Double = 0, wz: Double = 0
@@ -1007,12 +1109,6 @@ class GlobeScene: SCNScene {
             smoothRotateToFace(latitude: userLatitude, longitude: userLongitude)
         }
 
-        // Resume auto-rotate after a short delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
-            guard let self, !self.isFollowMode else { return }
-            let rotateAction = SCNAction.rotateBy(x: 0, y: 0.3, z: 0, duration: 10.0)
-            self.globeNode.runAction(SCNAction.repeatForever(rotateAction), forKey: "autoRotate")
-        }
     }
 
     // MARK: - Color Helpers
