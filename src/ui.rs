@@ -1,28 +1,24 @@
 use crate::app::App;
-use tui::{
-    backend::Backend,
-    layout::{Constraint, Direction, Layout, Rect, Alignment},
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Style},
     symbols,
-    text::{Span, Spans},
-    widgets::canvas::{Canvas, Line, Map, MapResolution, },
-    widgets::{
-         Block, Borders,
-         Row, Table, Tabs,Paragraph, Wrap
-    },
+    text::{Line, Span},
+    widgets::canvas::{Canvas, Line as CanvasLine, Map, MapResolution},
+    widgets::{Block, Borders, Paragraph, Row, Table, Tabs, Wrap},
     Frame,
 };
 
-pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
+pub fn draw(f: &mut Frame, app: &mut App) {
     let chunks = Layout::default()
         .constraints([Constraint::Length(0), Constraint::Min(0)].as_ref())
-        .split(f.size());
+        .split(f.area());
     let titles = app
         .tabs
         .titles
         .iter()
-        .map(|t| Spans::from(Span::styled(*t, Style::default().fg(Color::Green))))
-        .collect();
+        .map(|t| Line::from(Span::styled(*t, Style::default().fg(Color::Green))))
+        .collect::<Vec<_>>();
     let tabs = Tabs::new(titles)
         .block(Block::default().borders(Borders::ALL).title(app.title))
         .highlight_style(Style::default().fg(Color::Yellow))
@@ -36,17 +32,11 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     };
 }
 
-
-fn draw_first_tab<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
-where
-    B: Backend,
-{
+fn draw_first_tab(f: &mut Frame, app: &mut App, area: Rect) {
     let chunks = Layout::default()
         .constraints([Constraint::Percentage(100)].as_ref())
         .direction(Direction::Horizontal)
         .split(area);
-    
-    
 
     let map = Canvas::default()
         .block(Block::default().title("Connection map").borders(Borders::ALL))
@@ -56,10 +46,10 @@ where
                 resolution: MapResolution::High,
             });
             ctx.layer();
-            
+
             for (i, s1) in app.servers.iter().enumerate() {
                 for s2 in &app.servers[i + 1..] {
-                    ctx.draw(&Line {
+                    ctx.draw(&CanvasLine {
                         x1: s1.coords.1,
                         y1: s1.coords.0,
                         y2: s2.coords.0,
@@ -77,7 +67,7 @@ where
                 ctx.print(
                     server.coords.1,
                     server.coords.0,
-                    Span::styled("🐴", Style::default().fg(color)),
+                    Span::styled("X", Style::default().fg(color)),
                 );
             }
         })
@@ -91,72 +81,68 @@ where
     f.render_widget(map, chunks[0]);
 }
 
-fn draw_help_tab<B>(f: &mut Frame<B>, _app: &mut App, area: Rect)
-where
-    B: Backend,
-{
-    let chunks = Layout::default()
-    .constraints([Constraint::Percentage(100)].as_ref())
-    .direction(Direction::Horizontal)
-    .split(area);
-
-    let text = vec![
-    Spans::from(vec![
-        Span::styled("Help: ?", Style::default().fg(Color::LightGreen))
-    ]),
-    Spans::from(Span::styled("Move tabs: <>", Style::default().fg(Color::LightGreen))),
-    Spans::from(Span::styled("Quit: q", Style::default().fg(Color::LightGreen))),
-    
-];
-
-    let p = Paragraph::new(text)
-    .block(Block::default().title("Help Menu").borders(Borders::ALL))
-    .style(Style::default().fg(Color::White).bg(Color::Black))
-    .alignment(Alignment::Left)
-    .wrap(Wrap { trim: true });
-    
-    f.render_widget(p, chunks[0]);
-        
-}
-
-
-fn draw_second_tab<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
-where
-    B: Backend,
-{
+fn draw_help_tab(f: &mut Frame, _app: &mut App, area: Rect) {
     let chunks = Layout::default()
         .constraints([Constraint::Percentage(100)].as_ref())
         .direction(Direction::Horizontal)
         .split(area);
-    
+
+    let text = vec![
+        Line::from(vec![Span::styled(
+            "Help: ?",
+            Style::default().fg(Color::LightGreen),
+        )]),
+        Line::from(Span::styled(
+            "Move tabs: <>",
+            Style::default().fg(Color::LightGreen),
+        )),
+        Line::from(Span::styled(
+            "Quit: q",
+            Style::default().fg(Color::LightGreen),
+        )),
+    ];
+
+    let p = Paragraph::new(text)
+        .block(Block::default().title("Help Menu").borders(Borders::ALL))
+        .style(Style::default().fg(Color::White).bg(Color::Black))
+        .alignment(Alignment::Left)
+        .wrap(Wrap { trim: true });
+
+    f.render_widget(p, chunks[0]);
+}
+
+fn draw_second_tab(f: &mut Frame, app: &mut App, area: Rect) {
+    let chunks = Layout::default()
+        .constraints([Constraint::Percentage(100)].as_ref())
+        .direction(Direction::Horizontal)
+        .split(area);
 
     let up_style = Style::default().fg(Color::Green);
-    
+
     let rows = app.servers.iter().map(|s| {
-        let style = if s.status == "Connected" {
-            up_style
-        } else {
-            up_style
-        };
-        Row::new(vec![String::from(&s.name), String::from(&s.location), s.status.to_string(), s.count.to_string()]).style(style)
+        Row::new(vec![
+            String::from(&s.name),
+            String::from(&s.location),
+            s.status.to_string(),
+            s.count.to_string(),
+        ])
+        .style(up_style)
     });
 
-    let table = Table::new(rows)
+    let widths = [
+        Constraint::Length(25),
+        Constraint::Length(25),
+        Constraint::Length(20),
+        Constraint::Length(20),
+    ];
+
+    let table = Table::new(rows, widths)
         .header(
             Row::new(vec!["Server", "Location", "Status", "Count"])
                 .style(Style::default().fg(Color::Yellow))
                 .bottom_margin(1),
         )
-        .block(Block::default().title("Servers").borders(Borders::ALL))
-        .widths(&[
-            Constraint::Length(25),
-            Constraint::Length(25),
-            Constraint::Length(20),
-            Constraint::Length(20),
-        ]);
+        .block(Block::default().title("Servers").borders(Borders::ALL));
 
     f.render_widget(table, chunks[0]);
-
 }
-
-

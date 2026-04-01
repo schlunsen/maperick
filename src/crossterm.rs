@@ -9,8 +9,8 @@ use std::{
     io,
     time::{Duration, Instant},
 };
-use tui::{
-    backend::{Backend, CrosstermBackend},
+use ratatui::{
+    backend::CrosstermBackend,
     Terminal,
 };
 
@@ -42,8 +42,8 @@ pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> 
     Ok(())
 }
 
-fn run_app<B: Backend>(
-    terminal: &mut Terminal<B>,
+fn run_app(
+    terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
     mut app: App,
     tick_rate: Duration,
 ) -> io::Result<()> {

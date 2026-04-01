@@ -6,12 +6,12 @@ use termion::{
     raw::IntoRawMode,
     screen::AlternateScreen,
 };
-use tui::{
-    backend::{Backend, TermionBackend},
+use ratatui::{
+    backend::TermionBackend,
     Terminal,
 };
 
-pub fn run(tick_rate: Duration, enhanced_graphics: bool) -> Result<(), Box<dyn Error>> {
+pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> Result<(), Box<dyn Error>> {
     // setup terminal
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = MouseTerminal::from(stdout);
@@ -20,13 +20,13 @@ pub fn run(tick_rate: Duration, enhanced_graphics: bool) -> Result<(), Box<dyn E
     let mut terminal = Terminal::new(backend)?;
 
     // create app and run it
-    let app = App::new("Termo", enhanced_graphics);
+    let app = App::new("Termo", enhanced_graphics, geodb_path);
     run_app(&mut terminal, app, tick_rate)?;
 
     Ok(())
 }
 
-fn run_app<B: Backend>(
+fn run_app<B: ratatui::backend::Backend>(
     terminal: &mut Terminal<B>,
     mut app: App,
     tick_rate: Duration,
