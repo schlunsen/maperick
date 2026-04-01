@@ -3,8 +3,7 @@ use std::collections::HashMap;
 use maperick::netstats::{self, get_sockets};
 use netstat2::*;
 use serde::{Deserialize, Serialize};
-use sysinfo::{System, SystemExt};
-extern crate confy;
+use sysinfo::System;
 
 use maxminddb::{geoip2, Reader};
 
@@ -124,7 +123,7 @@ impl<'a> App<'a> {
             //self.progress = 0.0;
         }
 
-        let sys = System::new_all();
+        let sys = System::new_with_specifics(sysinfo::RefreshKind::nothing().with_processes(sysinfo::ProcessRefreshKind::everything()));
         let sockets: Vec<netstats::SocketInfo> = get_sockets(&sys, AddressFamilyFlags::IPV4);
 
         let mut remote_addrs = vec![];

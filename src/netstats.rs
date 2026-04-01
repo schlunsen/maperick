@@ -1,5 +1,6 @@
 use netstat2::*;
-use sysinfo::{ProcessExt, System, SystemExt};
+use sysinfo::System;
+
 pub struct ProcessInfo {
     pid: u32,
     name: String,
@@ -35,19 +36,20 @@ pub fn get_sockets(sys: &System, addr: AddressFamilyFlags) -> Vec<SocketInfo> {
         let process_ids = si.associated_pids;
         let mut processes: Vec<ProcessInfo> = Vec::new();
         for pid in process_ids {
-            let name = match sys.process((pid as i32).try_into().unwrap()) {
-                Some(pinfo) => pinfo.name(),
-                None => "",
+            let sysinfo_pid = sysinfo::Pid::from_u32(pid);
+            let name = match sys.process(sysinfo_pid) {
+                Some(pinfo) => pinfo.name().to_string_lossy().to_string(),
+                None => String::new(),
             };
             processes.push(ProcessInfo {
-                pid: pid,
-                name: name.to_string(),
+                pid,
+                name,
             });
         }
 
         match si.protocol_socket_info {
             ProtocolSocketInfo::Tcp(tcp) => sockets.push(SocketInfo {
-                processes: processes,
+                processes,
                 local_port: tcp.local_port,
                 local_addr: tcp.local_addr,
                 remote_port: Some(tcp.remote_port),
@@ -57,7 +59,7 @@ pub fn get_sockets(sys: &System, addr: AddressFamilyFlags) -> Vec<SocketInfo> {
                 family: addr,
             }),
             ProtocolSocketInfo::Udp(udp) => sockets.push(SocketInfo {
-                processes: processes,
+                processes,
                 local_port: udp.local_port,
                 local_addr: udp.local_addr,
                 remote_port: None,
