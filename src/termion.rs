@@ -1,5 +1,5 @@
 use crate::{app::App, ui};
-use std::{error::Error, io, sync::mpsc, thread, time::Duration};
+use std::{io, sync::mpsc, thread, time::Duration};
 use termion::{
     event::Key,
     input::{MouseTerminal, TermRead},
@@ -11,7 +11,7 @@ use tui::{
     Terminal,
 };
 
-pub fn run(tick_rate: Duration, enhanced_graphics: bool) -> Result<(), Box<dyn Error>> {
+pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> anyhow::Result<()> {
     // setup terminal
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = MouseTerminal::from(stdout);
@@ -20,7 +20,7 @@ pub fn run(tick_rate: Duration, enhanced_graphics: bool) -> Result<(), Box<dyn E
     let mut terminal = Terminal::new(backend)?;
 
     // create app and run it
-    let app = App::new("Termo", enhanced_graphics);
+    let app = App::new("Termo", enhanced_graphics, geodb_path)?;
     run_app(&mut terminal, app, tick_rate)?;
 
     Ok(())
@@ -30,7 +30,7 @@ fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     mut app: App,
     tick_rate: Duration,
-) -> Result<(), Box<dyn Error>> {
+) -> anyhow::Result<()> {
     let events = events(tick_rate);
     loop {
         terminal.draw(|f| ui::draw(f, &mut app))?;
