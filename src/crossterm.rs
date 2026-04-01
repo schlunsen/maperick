@@ -10,7 +10,11 @@ use std::{
     time::{Duration, Instant},
 };
 
-pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> anyhow::Result<()> {
+pub fn run(
+    tick_rate: Duration,
+    enhanced_graphics: bool,
+    geodb_path: String,
+) -> anyhow::Result<()> {
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -19,7 +23,7 @@ pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> 
     let mut terminal = Terminal::new(backend)?;
 
     // create app and run it
-    let app = App::new("Crossterm Demo", enhanced_graphics, geodb_path)?;
+    let app = App::new("Maperick", enhanced_graphics, geodb_path)?;
     let res = run_app(&mut terminal, app, tick_rate);
 
     // restore terminal
@@ -52,12 +56,23 @@ fn run_app(
             .unwrap_or_else(|| Duration::from_secs(0));
         if crossterm::event::poll(timeout)? {
             if let Event::Key(key) = event::read()? {
-                match key.code {
-                    KeyCode::Char(c) => app.on_key(c),
-                    KeyCode::Esc => app.on_key('q'),
-                    KeyCode::Right => app.on_right(),
-                    KeyCode::Left => app.on_left(),
-                    _ => {}
+                if app.show_detail_popup {
+                    // Modal: only Esc/q close the popup
+                    match key.code {
+                        KeyCode::Esc | KeyCode::Char('q') => app.on_escape(),
+                        _ => {}
+                    }
+                } else {
+                    match key.code {
+                        KeyCode::Char(c) => app.on_key(c),
+                        KeyCode::Esc => app.on_escape(),
+                        KeyCode::Right => app.on_right(),
+                        KeyCode::Left => app.on_left(),
+                        KeyCode::Up => app.on_up(),
+                        KeyCode::Down => app.on_down(),
+                        KeyCode::Enter => app.on_enter(),
+                        _ => {}
+                    }
                 }
             }
         }

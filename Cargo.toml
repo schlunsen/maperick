@@ -1,7 +1,13 @@
 [package]
 name = "maperick"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
+description = "Visualize active TCP connections on a TUI world map"
+license = "MIT"
+repository = "https://github.com/schlunsen/maperick"
+keywords = ["tui", "network", "geoip", "terminal", "tcp"]
+categories = ["command-line-utilities", "network-programming", "visualization"]
+readme = "README.md"
 
 [features]
 default = ["crossterm"]
@@ -9,21 +15,15 @@ default = ["crossterm"]
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
 netstat2 = "0.9"
-bitflags = "2"
-cassowary = "0.3"
-unicode-segmentation = "1.12"
-unicode-width = "0.1"
 termion = { version = "4", optional = true }
 crossterm = { version = "0.28", optional = true }
-serde = { version = "1", features = ["derive"] }
 ratatui = "0.29"
-rand = "0.8"
 sysinfo = "0.33"
-termcolor = "1"
 maxminddb = "0.24"
-public-ip = "0.2"
-confy = "0.6"
 anyhow = "1"
+dirs = "6"
+ureq = "3"
+flate2 = "1"
 
 [dev-dependencies]
 rand = "0.8"
