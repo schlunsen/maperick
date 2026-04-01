@@ -65,6 +65,8 @@ pub struct ProcessInfo {
     pub ips: Vec<String>,
     pub total_connections: u128,
     pub ports: HashSet<u16>,
+    pub coords: Vec<(f64, f64)>,
+    pub locations: Vec<String>,
 }
 
 pub struct App<'a> {
@@ -335,10 +337,21 @@ impl<'a> App<'a> {
                     ips: vec![],
                     total_connections: 0,
                     ports: HashSet::new(),
+                    coords: vec![],
+                    locations: vec![],
                 });
                 entry.ips.push(server.name.clone());
                 entry.total_connections += server.count;
                 entry.ports.extend(&server.ports);
+                entry.coords.push(server.coords);
+                let loc = if server.country.is_empty() {
+                    server.location.clone()
+                } else {
+                    format!("{}, {}", server.location, server.country)
+                };
+                if !entry.locations.contains(&loc) {
+                    entry.locations.push(loc);
+                }
             }
         }
 

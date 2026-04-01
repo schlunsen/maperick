@@ -195,10 +195,17 @@ fn draw_servers_tab(f: &mut Frame, app: &mut App, area: Rect) {
 }
 
 fn draw_processes_tab(f: &mut Frame, app: &mut App, area: Rect) {
-    let chunks = Layout::default()
-        .constraints([Constraint::Min(10), Constraint::Length(10)].as_ref())
-        .direction(Direction::Vertical)
+    // Split: left side (table + detail), right side (map)
+    let h_chunks = Layout::default()
+        .constraints([Constraint::Percentage(45), Constraint::Percentage(55)].as_ref())
+        .direction(Direction::Horizontal)
         .split(area);
+
+    // Left side: table on top, detail below
+    let left_chunks = Layout::default()
+        .constraints([Constraint::Min(8), Constraint::Length(8)].as_ref())
+        .direction(Direction::Vertical)
+        .split(h_chunks[0]);
 
     let normal_style = Style::default().fg(Color::Green);
     let selected_style = Style::default()
@@ -207,35 +214,23 @@ fn draw_processes_tab(f: &mut Frame, app: &mut App, area: Rect) {
         .add_modifier(Modifier::BOLD);
 
     let rows = app.process_list.iter().map(|p| {
-        let ports_str: String = {
-            let mut sorted: Vec<u16> = p.ports.iter().copied().collect();
-            sorted.sort();
-            sorted
-                .iter()
-                .take(5)
-                .map(|port| format_port(*port))
-                .collect::<Vec<_>>()
-                .join(", ")
-        };
         Row::new(vec![
             p.name.clone(),
             p.ips.len().to_string(),
             p.total_connections.to_string(),
-            ports_str,
         ])
         .style(normal_style)
     });
 
     let widths = [
-        Constraint::Length(25),
-        Constraint::Length(10),
-        Constraint::Length(14),
-        Constraint::Min(20),
+        Constraint::Length(22),
+        Constraint::Length(6),
+        Constraint::Length(8),
     ];
 
     let table = Table::new(rows, widths)
         .header(
-            Row::new(vec!["Process", "Unique IPs", "Connections", "Ports"])
+            Row::new(vec!["Process", "IPs", "Conns"])
                 .style(
                     Style::default()
                         .fg(Color::Yellow)
@@ -245,61 +240,55 @@ fn draw_processes_tab(f: &mut Frame, app: &mut App, area: Rect) {
         )
         .block(
             Block::default()
-                .title("Processes (↑↓ to select)")
+                .title("Processes (↑↓)")
                 .borders(Borders::ALL),
         )
         .row_highlight_style(selected_style)
         .highlight_symbol("► ");
 
-    f.render_stateful_widget(table, chunks[0], &mut app.process_table_state);
+    f.render_stateful_widget(table, left_chunks[0], &mut app.process_table_state);
 
-    // Process detail pane
-    let detail_text = if let Some(selected) = app.process_table_state.selected() {
-        if let Some(proc) = app.process_list.get(selected) {
-            let ips_str = if proc.ips.len() <= 5 {
-                proc.ips.join(", ")
-            } else {
-                format!(
-                    "{} ... and {} more",
-                    proc.ips[..5].join(", "),
-                    proc.ips.len() - 5
-                )
-            };
-            vec![
-                Line::from(vec![
-                    Span::styled("  Process: ", Style::default().fg(Color::DarkGray)),
-                    Span::styled(
-                        &proc.name,
-                        Style::default()
-                            .fg(Color::LightMagenta)
-                            .add_modifier(Modifier::BOLD),
-                    ),
-                ]),
-                Line::from(vec![
-                    Span::styled("  Unique IPs: ", Style::default().fg(Color::DarkGray)),
-                    Span::styled(
-                        proc.ips.len().to_string(),
-                        Style::default().fg(Color::White),
-                    ),
-                ]),
-                Line::from(vec![
-                    Span::styled(
-                        "  Total connections: ",
-                        Style::default().fg(Color::DarkGray),
-                    ),
-                    Span::styled(
-                        proc.total_connections.to_string(),
-                        Style::default().fg(Color::LightGreen),
-                    ),
-                ]),
-                Line::from(vec![
-                    Span::styled("  Connected to: ", Style::default().fg(Color::DarkGray)),
-                    Span::styled(ips_str, Style::default().fg(Color::LightCyan)),
-                ]),
-            ]
-        } else {
-            vec![Line::from("")]
-        }
+    // Detail pane (bottom-left)
+    let selected_proc = app
+        .process_table_state
+        .selected()
+        .and_then(|i| app.process_list.get(i));
+
+    let detail_text = if let Some(proc) = selected_proc {
+        let ports_str: String = {
+            let mut sorted: Vec<u16> = proc.ports.iter().copied().collect();
+            sorted.sort();
+            sorted
+                .iter()
+                .take(6)
+                .map(|port| format_port(*port))
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
+        let locations_str = proc.locations.join(", ");
+        vec![
+            Line::from(vec![
+                Span::styled(" ", Style::default()),
+                Span::styled(
+                    &proc.name,
+                    Style::default()
+                        .fg(Color::LightMagenta)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(
+                    format!("  {} IPs, {} conns", proc.ips.len(), proc.total_connections),
+                    Style::default().fg(Color::DarkGray),
+                ),
+            ]),
+            Line::from(vec![
+                Span::styled(" Ports: ", Style::default().fg(Color::DarkGray)),
+                Span::styled(ports_str, Style::default().fg(Color::LightCyan)),
+            ]),
+            Line::from(vec![
+                Span::styled(" Locations: ", Style::default().fg(Color::DarkGray)),
+                Span::styled(locations_str, Style::default().fg(Color::White)),
+            ]),
+        ]
     } else {
         vec![Line::from(Span::styled(
             "  No process selected",
@@ -308,14 +297,56 @@ fn draw_processes_tab(f: &mut Frame, app: &mut App, area: Rect) {
     };
 
     let detail = Paragraph::new(detail_text)
+        .block(Block::default().title("Details").borders(Borders::ALL))
+        .style(Style::default().fg(Color::White))
+        .wrap(Wrap { trim: true });
+
+    f.render_widget(detail, left_chunks[1]);
+
+    // Right side: mini map filtered to selected process's connections
+    let proc_coords: Vec<(f64, f64)> = selected_proc
+        .map(|p| p.coords.clone())
+        .unwrap_or_default();
+
+    let proc_name_title = selected_proc
+        .map(|p| format!("Map: {}", p.name))
+        .unwrap_or_else(|| "Map".to_string());
+
+    let map = Canvas::default()
         .block(
             Block::default()
-                .title("Process Details")
+                .title(proc_name_title)
                 .borders(Borders::ALL),
         )
-        .style(Style::default().fg(Color::White));
+        .paint(move |ctx| {
+            ctx.draw(&Map {
+                color: Color::DarkGray,
+                resolution: MapResolution::High,
+            });
+            ctx.layer();
 
-    f.render_widget(detail, chunks[1]);
+            for &(lat, lon) in &proc_coords {
+                ctx.print(
+                    lon,
+                    lat,
+                    Span::styled(
+                        "●",
+                        Style::default()
+                            .fg(Color::LightMagenta)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                );
+            }
+        })
+        .marker(if app.enhanced_graphics {
+            symbols::Marker::Braille
+        } else {
+            symbols::Marker::Block
+        })
+        .x_bounds([-180.0, 180.0])
+        .y_bounds([-90.0, 90.0]);
+
+    f.render_widget(map, h_chunks[1]);
 }
 
 fn draw_help_tab(f: &mut Frame, _app: &mut App, area: Rect) {
