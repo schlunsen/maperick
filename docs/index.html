@@ -74,6 +74,16 @@
         <div class="feature-card fade-in">
           <div class="feature-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </div>
+          <h3>Connection History</h3>
+          <p>Persists all-time connection statistics in a local SQLite database. Track which IPs you've connected to, when, and how often &mdash; across sessions.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
               <line x1="8" y1="21" x2="16" y2="21"></line>
               <line x1="12" y1="17" x2="12" y2="21"></line>
@@ -81,6 +91,29 @@
           </div>
           <h3>Interactive TUI</h3>
           <p>Navigate with keyboard shortcuts, switch between multiple tabs, and view color-coded connection statuses. A full terminal UI powered by Ratatui.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </div>
+          <h3>Per-Process Tracking</h3>
+          <p>See which processes are making connections. The Processes tab shows a split view with per-process connection maps and statistics.</p>
+        </div>
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </div>
+          <h3>Auto GeoIP Download</h3>
+          <p>Automatically downloads the GeoLite2 database on first run. No manual setup required &mdash; just run and start exploring your network.</p>
         </div>
       </div>
     </div>
@@ -91,20 +124,60 @@
     <div class="container">
       <h2 class="section-title">See it in action</h2>
       <p class="section-subtitle">A full-featured network visualization running entirely in your terminal.</p>
-      <div class="terminal-window fade-in">
-        <div class="terminal-header">
-          <div class="terminal-dots">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
+
+      <!-- Screenshots Grid -->
+      <div class="screenshots-grid fade-in">
+        <div class="screenshot-item">
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <span class="terminal-title">maperick &mdash; Map Tab</span>
+            </div>
+            <div class="terminal-body">
+              <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/map.png" alt="Map view showing TCP connections on a world map" class="screenshot">
+            </div>
           </div>
-          <span class="terminal-title">maperick &mdash; ~/projects</span>
+          <p class="caption">World map view with geolocated connections</p>
         </div>
-        <div class="terminal-body">
-          <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/.github/screenshot.png" alt="Maperick TUI showing a world map with active TCP connections, connection table, and network statistics" class="screenshot">
+
+        <div class="screenshot-item">
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <span class="terminal-title">maperick &mdash; Servers Tab</span>
+            </div>
+            <div class="terminal-body">
+              <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/servers.png" alt="Servers view with connection statistics" class="screenshot">
+            </div>
+          </div>
+          <p class="caption">Server statistics with all-time history</p>
+        </div>
+
+        <div class="screenshot-item">
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <span class="terminal-title">maperick &mdash; Processes Tab</span>
+            </div>
+            <div class="terminal-body">
+              <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/processes.png" alt="Processes view showing per-process connections" class="screenshot">
+            </div>
+          </div>
+          <p class="caption">Per-process connection tracking</p>
         </div>
       </div>
-      <p class="caption">TCP connections visualized on a world map with real-time statistics and connection details.</p>
     </div>
   </section>
 
