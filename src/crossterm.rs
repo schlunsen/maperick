@@ -5,7 +5,6 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::{
-    error::Error,
     io,
     time::{Duration, Instant},
 };
@@ -14,7 +13,7 @@ use ratatui::{
     Terminal,
 };
 
-pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> Result<(), Box<dyn Error>> {
+pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> anyhow::Result<()> {
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -23,7 +22,7 @@ pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> 
     let mut terminal = Terminal::new(backend)?;
 
     // create app and run it
-    let app = App::new("Crossterm Demo", enhanced_graphics, geodb_path);
+    let app = App::new("Crossterm Demo", enhanced_graphics, geodb_path)?;
     let res = run_app(&mut terminal, app, tick_rate);
 
     // restore terminal
@@ -36,7 +35,7 @@ pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> 
     terminal.show_cursor()?;
 
     if let Err(err) = res {
-        println!("{:?}", err)
+        eprintln!("Application error: {:?}", err)
     }
 
     Ok(())

@@ -11,9 +11,7 @@ mod ui;
 use crate::crossterm::run;
 #[cfg(feature = "termion")]
 use crate::termion::run;
-use std::{error::Error, time::Duration};
-
-
+use std::time::Duration;
 
 /// Map tcp connections on a TUI world map
 #[derive(Parser, Debug)]
@@ -22,34 +20,25 @@ use std::{error::Error, time::Duration};
 #[clap(about, long_about = None)]
 pub struct Args {
     /// time in ms between two ticks.
-    
     #[clap(help = "time in ms between two ticks.")]
     #[clap(short = 't', default_missing_value = "250")]
     tick_rate: Option<u64>,
 
-    
     #[clap(help = "Path to geolite2 db")]
     #[clap(short = 'p', default_missing_value = "mmdbs/GeoLite2-City.mmdb")]
     path: Option<String>,
 
     /// whether unicode symbols are used to improve the overall look of the app
-    #[clap(short = 'e', default_missing_value = "true",)]
+    #[clap(short = 'e', default_missing_value = "true")]
     enhanced_graphics: bool,
 }
 
+fn main() -> anyhow::Result<()> {
+    let args = Args::parse();
 
+    let tick_rate = Duration::from_millis(args.tick_rate.unwrap_or(250));
+    let geodb_path = args.path.unwrap_or_default();
 
-fn main() -> Result<(), Box<dyn Error>> {
-
-    let args =  Args::parse();
-
-    let tick_rate = if args.tick_rate.unwrap_or(0) > 0 { Duration::from_millis(args.tick_rate.expect("")) } else { Duration::from_millis(250) };
-    
-    let geodb_path =  match args.path {
-        Some(p) => { p },
-        None => { String::from("") },
-     };
-    
     run(tick_rate, args.enhanced_graphics, geodb_path)?;
     Ok(())
 }

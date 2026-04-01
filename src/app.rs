@@ -13,7 +13,7 @@ pub struct TabsState<'a> {
 }
 
 impl<'a> TabsState<'a> {
-    pub fn new(titles: Vec<&'a str>) -> TabsState {
+    pub fn new(titles: Vec<&'a str>) -> TabsState<'a> {
         TabsState { titles, index: 0 }
     }
     pub fn next(&mut self) {
@@ -45,10 +45,8 @@ pub struct App<'a> {
     pub title: &'a str,
     pub should_quit: bool,
     pub tabs: TabsState<'a>,
-    pub show_chart: bool,
     pub progress: f64,
     pub reader: Reader<Vec<u8>>,
-
     pub servers: Vec<Server>,
     pub enhanced_graphics: bool,
 }
@@ -57,8 +55,8 @@ pub struct App<'a> {
 struct MaperickConfig {
     path: String,
 }
-/// `MaperickConfig` implements `Default`
-impl ::std::default::Default for MaperickConfig {
+
+impl Default for MaperickConfig {
     fn default() -> Self {
         Self {
             path: "mmdbs/GeoLite2-City.mmdb".into(),
@@ -67,35 +65,42 @@ impl ::std::default::Default for MaperickConfig {
 }
 
 impl<'a> App<'a> {
-    pub fn new(title: &'a str, enhanced_graphics: bool, geodb_path: String) -> App<'a> {
-        let mut cfg: MaperickConfig = confy::load("maperick", None).unwrap();
+    pub fn new(
+        title: &'a str,
+        enhanced_graphics: bool,
+        geodb_path: String,
+    ) -> anyhow::Result<App<'a>> {
+        let mut cfg: MaperickConfig = confy::load("maperick", None)
+            .unwrap_or_else(|_| MaperickConfig::default());
 
-        let reader = match geodb_path.len() {
-            0 => maxminddb::Reader::open_readfile(cfg.path).unwrap(),
-            _ => {
-                cfg.path = geodb_path.clone();
-                // Store path for later use, if not path not provided as argument.
-                confy::store("maperick", None, cfg).expect("Couldn't store config");
-
-                maxminddb::Reader::open_readfile(geodb_path).unwrap()
+        let reader = if geodb_path.is_empty() {
+            maxminddb::Reader::open_readfile(&cfg.path)
+                .map_err(|e| anyhow::anyhow!("Failed to open GeoIP database at '{}': {}", cfg.path, e))?
+        } else {
+            cfg.path = geodb_path.clone();
+            if let Err(e) = confy::store("maperick", None, &cfg) {
+                eprintln!("Warning: couldn't store config: {}", e);
             }
+            maxminddb::Reader::open_readfile(&geodb_path)
+                .map_err(|e| anyhow::anyhow!("Failed to open GeoIP database at '{}': {}", geodb_path, e))?
         };
 
-        App {
+        Ok(App {
             title,
             should_quit: false,
             tabs: TabsState::new(vec!["Tab0", "Tab1", "Help"]),
-            show_chart: true,
             progress: 0.0,
-            reader: reader,
+            reader,
             servers: vec![],
             enhanced_graphics,
-        }
+        })
     }
 
     pub fn on_right(&mut self) {
         self.tabs.next();
     }
+
+    #[allow(dead_code)]
     pub fn on_help(&mut self) {
         self.tabs.help();
     }
@@ -117,77 +122,72 @@ impl<'a> App<'a> {
     }
 
     pub fn on_tick(&mut self) {
-        // Update progress
-        self.progress += 1.111;
-        if self.progress > 1.0 {
-            //self.progress = 0.0;
-        }
-
-        let sys = System::new_with_specifics(sysinfo::RefreshKind::nothing().with_processes(sysinfo::ProcessRefreshKind::everything()));
+        let sys = System::new_with_specifics(
+            sysinfo::RefreshKind::nothing()
+                .with_processes(sysinfo::ProcessRefreshKind::everything()),
+        );
         let sockets: Vec<netstats::SocketInfo> = get_sockets(&sys, AddressFamilyFlags::IPV4);
 
-        let mut remote_addrs = vec![];
+        let mut remote_addrs: Vec<std::net::IpAddr> = vec![];
         let mut remote_addrs_map: HashMap<String, u128> = HashMap::new();
-        let mut count = 0;
+
         for s in sockets {
             if s.protocol != ProtocolFlags::TCP {
                 continue;
             }
-
-            let ip_ver = if s.family == AddressFamilyFlags::IPV4 {
-                "4"
-            } else {
-                "6"
-            };
-
-            if ip_ver == "6" {
+            if s.family != AddressFamilyFlags::IPV4 {
+                continue;
+            }
+            if s.state == Some(TcpState::Listen) {
                 continue;
             }
 
-            if s.state == Some(TcpState::Listen) {
-            } else {
-                let remote_addr = s.remote_addr.clone();
-                let entry = remote_addrs_map.get(&remote_addr.unwrap().to_string());
+            let remote_addr = match s.remote_addr {
+                Some(addr) => addr,
+                None => continue,
+            };
 
-                if entry.is_some() {
-                    remote_addrs_map.insert(remote_addr.unwrap().to_string(), entry.unwrap() + 1);
-                } else {
-                    remote_addrs_map.insert(remote_addr.unwrap().to_string(), 1);
-                    remote_addrs.insert(count, remote_addr);
-                    count = count + 1;
-                }
+            let key = remote_addr.to_string();
+            let count = remote_addrs_map.entry(key).or_insert(0);
+            if *count == 0 {
+                remote_addrs.push(remote_addr);
             }
+            *count += 1;
         }
+
         self.servers.clear();
 
-        let mut count = 0;
-        for x in remote_addrs {
-            let city: geoip2::City = match self.reader.lookup(x.unwrap()) {
+        for addr in &remote_addrs {
+            let city: geoip2::City = match self.reader.lookup(*addr) {
                 Ok(city) => city,
                 Err(_) => continue,
             };
+
             let cityname = match city.city.and_then(|c| c.names) {
-                Some(names) => names.get("en").unwrap_or(&""),
+                Some(names) => names.get("en").copied().unwrap_or(""),
                 None => "",
             };
 
-            let connection_count = remote_addrs_map.get(&x.unwrap().to_string()).unwrap();
-
-            self.servers.insert(
-                count,
-                Server {
-                    name: x.unwrap().to_string(),
-                    location: String::from(cityname),
-                    coords: (
-                        city.location.clone().unwrap().latitude.clone().unwrap(),
-                        city.location.clone().unwrap().longitude.clone().unwrap(),
-                    ),
-                    status: String::from("Connected"),
-                    count: *connection_count,
+            let location = match &city.location {
+                Some(loc) => match (loc.latitude, loc.longitude) {
+                    (Some(lat), Some(lon)) => (lat, lon),
+                    _ => continue,
                 },
-            );
+                None => continue,
+            };
 
-            count = count + 1;
+            let connection_count = remote_addrs_map
+                .get(&addr.to_string())
+                .copied()
+                .unwrap_or(1);
+
+            self.servers.push(Server {
+                name: addr.to_string(),
+                location: String::from(cityname),
+                coords: location,
+                status: String::from("Connected"),
+                count: connection_count,
+            });
         }
     }
 }

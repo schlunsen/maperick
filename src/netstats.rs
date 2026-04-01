@@ -2,8 +2,8 @@ use netstat2::*;
 use sysinfo::System;
 
 pub struct ProcessInfo {
-    pid: u32,
-    name: String,
+    pub pid: u32,
+    pub name: String,
 }
 
 pub struct SocketInfo {
@@ -19,7 +19,13 @@ pub struct SocketInfo {
 
 pub fn get_sockets(sys: &System, addr: AddressFamilyFlags) -> Vec<SocketInfo> {
     let protos = ProtocolFlags::TCP | ProtocolFlags::UDP;
-    let iterator = iterate_sockets_info(addr, protos).expect("Failed to get socket information!");
+    let iterator = match iterate_sockets_info(addr, protos) {
+        Ok(iter) => iter,
+        Err(e) => {
+            eprintln!("Failed to get socket information: {}", e);
+            return Vec::new();
+        }
+    };
 
     let mut sockets: Vec<SocketInfo> = Vec::new();
 
@@ -27,12 +33,11 @@ pub fn get_sockets(sys: &System, addr: AddressFamilyFlags) -> Vec<SocketInfo> {
         let si = match info {
             Ok(si) => si,
             Err(_err) => {
-                println!("Failed to get info for socket!");
+                eprintln!("Failed to get info for socket");
                 continue;
             }
         };
 
-        // gather associated processes
         let process_ids = si.associated_pids;
         let mut processes: Vec<ProcessInfo> = Vec::new();
         for pid in process_ids {
@@ -41,10 +46,7 @@ pub fn get_sockets(sys: &System, addr: AddressFamilyFlags) -> Vec<SocketInfo> {
                 Some(pinfo) => pinfo.name().to_string_lossy().to_string(),
                 None => String::new(),
             };
-            processes.push(ProcessInfo {
-                pid,
-                name,
-            });
+            processes.push(ProcessInfo { pid, name });
         }
 
         match si.protocol_socket_info {
