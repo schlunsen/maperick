@@ -24,6 +24,7 @@ anyhow = "1"
 dirs = "6"
 ureq = "3"
 flate2 = "1"
+rusqlite = { version = "0.31", features = ["bundled"] }
 
 [dev-dependencies]
 rand = "0.8"
