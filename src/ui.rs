@@ -304,9 +304,7 @@ fn draw_processes_tab(f: &mut Frame, app: &mut App, area: Rect) {
     f.render_widget(detail, left_chunks[1]);
 
     // Right side: mini map filtered to selected process's connections
-    let proc_coords: Vec<(f64, f64)> = selected_proc
-        .map(|p| p.coords.clone())
-        .unwrap_or_default();
+    let proc_coords: Vec<(f64, f64)> = selected_proc.map(|p| p.coords.clone()).unwrap_or_default();
 
     let proc_name_title = selected_proc
         .map(|p| format!("Map: {}", p.name))
@@ -353,27 +351,63 @@ fn draw_help_tab(f: &mut Frame, _app: &mut App, area: Rect) {
     let text = vec![
         Line::from(""),
         Line::from(vec![
-            Span::styled("  ← → ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "  ← → ",
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            ),
             Span::styled("Switch tabs", Style::default().fg(Color::White)),
         ]),
         Line::from(vec![
-            Span::styled("  ↑ ↓ ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
-            Span::styled("Navigate server/process list", Style::default().fg(Color::White)),
+            Span::styled(
+                "  ↑ ↓ ",
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(
+                "Navigate server/process list",
+                Style::default().fg(Color::White),
+            ),
         ]),
         Line::from(vec![
-            Span::styled("  Enter ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
-            Span::styled("Open detailed stats for selected server", Style::default().fg(Color::White)),
+            Span::styled(
+                "  Enter ",
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(
+                "Open detailed stats for selected server",
+                Style::default().fg(Color::White),
+            ),
         ]),
         Line::from(vec![
-            Span::styled("  Esc ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "  Esc ",
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            ),
             Span::styled("Close popup / Quit", Style::default().fg(Color::White)),
         ]),
         Line::from(vec![
-            Span::styled("  q ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "  q ",
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            ),
             Span::styled("Quit", Style::default().fg(Color::White)),
         ]),
         Line::from(vec![
-            Span::styled("  h ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "  h ",
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            ),
             Span::styled("Show this help", Style::default().fg(Color::White)),
         ]),
     ];
@@ -475,17 +509,11 @@ fn draw_detail_popup(f: &mut Frame, app: &mut App) {
                 Style::default().fg(Color::DarkGray),
             )),
             Line::from(vec![
-                Span::styled(
-                    "  Tracking for: ",
-                    Style::default().fg(Color::DarkGray),
-                ),
+                Span::styled("  Tracking for: ", Style::default().fg(Color::DarkGray)),
                 Span::styled(duration_str, Style::default().fg(Color::White)),
             ]),
             Line::from(vec![
-                Span::styled(
-                    "  Times detected: ",
-                    Style::default().fg(Color::DarkGray),
-                ),
+                Span::styled("  Times detected: ", Style::default().fg(Color::DarkGray)),
                 Span::styled(
                     format!("{} polling cycles", hist.times_detected),
                     Style::default().fg(Color::LightGreen),
@@ -550,10 +578,7 @@ fn draw_detail_popup(f: &mut Frame, app: &mut App) {
 
     lines.push(Line::from(""));
     lines.push(Line::from(vec![
-        Span::styled(
-            "  Current ports: ",
-            Style::default().fg(Color::DarkGray),
-        ),
+        Span::styled("  Current ports: ", Style::default().fg(Color::DarkGray)),
         Span::styled(&current_ports, Style::default().fg(Color::LightCyan)),
     ]));
     lines.push(Line::from(vec![

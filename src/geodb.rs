@@ -91,11 +91,7 @@ fn download_db(dest: &PathBuf) -> Result<()> {
         .with_context(|| format!("Failed to write GeoIP database to '{}'", dest.display()))?;
 
     let size_mb = mmdb_data.len() as f64 / (1024.0 * 1024.0);
-    eprintln!(
-        "  Downloaded {:.1} MB to {}",
-        size_mb,
-        dest.display()
-    );
+    eprintln!("  Downloaded {:.1} MB to {}", size_mb, dest.display());
     eprintln!("  Database provided by DB-IP (https://db-ip.com), CC-BY-4.0 license.");
     eprintln!();
 

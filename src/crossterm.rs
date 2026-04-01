@@ -10,11 +10,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-pub fn run(
-    tick_rate: Duration,
-    enhanced_graphics: bool,
-    geodb_path: String,
-) -> anyhow::Result<()> {
+pub fn run(tick_rate: Duration, enhanced_graphics: bool, geodb_path: String) -> anyhow::Result<()> {
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();

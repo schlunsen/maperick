@@ -274,17 +274,20 @@ impl<'a> App<'a> {
 
             // Update session history
             active_ips.insert(key.clone());
-            let hist = self.server_history.entry(key).or_insert_with(|| ServerHistory {
-                first_seen: Instant::now(),
-                last_seen: Instant::now(),
-                times_detected: 0,
-                total_connections: 0,
-                all_ports: HashSet::new(),
-                all_processes: HashSet::new(),
-                recent_counts: VecDeque::with_capacity(SPARKLINE_WINDOW),
-                location: String::new(),
-                country: String::new(),
-            });
+            let hist = self
+                .server_history
+                .entry(key)
+                .or_insert_with(|| ServerHistory {
+                    first_seen: Instant::now(),
+                    last_seen: Instant::now(),
+                    times_detected: 0,
+                    total_connections: 0,
+                    all_ports: HashSet::new(),
+                    all_processes: HashSet::new(),
+                    recent_counts: VecDeque::with_capacity(SPARKLINE_WINDOW),
+                    location: String::new(),
+                    country: String::new(),
+                });
             hist.last_seen = Instant::now();
             hist.times_detected += 1;
             hist.total_connections += connection_count;
@@ -333,14 +336,16 @@ impl<'a> App<'a> {
 
         for server in &self.servers {
             for proc_name in &server.processes {
-                let entry = proc_map.entry(proc_name.clone()).or_insert_with(|| ProcessInfo {
-                    name: proc_name.clone(),
-                    ips: vec![],
-                    total_connections: 0,
-                    ports: HashSet::new(),
-                    coords: vec![],
-                    locations: vec![],
-                });
+                let entry = proc_map
+                    .entry(proc_name.clone())
+                    .or_insert_with(|| ProcessInfo {
+                        name: proc_name.clone(),
+                        ips: vec![],
+                        total_connections: 0,
+                        ports: HashSet::new(),
+                        coords: vec![],
+                        locations: vec![],
+                    });
                 entry.ips.push(server.name.clone());
                 entry.total_connections += server.count;
                 entry.ports.extend(&server.ports);
@@ -358,7 +363,8 @@ impl<'a> App<'a> {
 
         let prev_selected = self.process_table_state.selected();
         self.process_list = proc_map.into_values().collect();
-        self.process_list.sort_by(|a, b| b.total_connections.cmp(&a.total_connections));
+        self.process_list
+            .sort_by(|a, b| b.total_connections.cmp(&a.total_connections));
 
         if !self.process_list.is_empty() {
             let idx = prev_selected.unwrap_or(0).min(self.process_list.len() - 1);
