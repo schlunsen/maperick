@@ -1,57 +1,77 @@
 # Maperick
-![Workflow](https://github.com/schlunsen/maperick/actions/workflows/ci-tests.yml/badge.svg)
 
-Show active TCP connections on a TUI world map. Still WIP, but it's gonna be good.
+[![CI](https://github.com/schlunsen/maperick/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/schlunsen/maperick/actions/workflows/ci-tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-![](.github/screenshot.png)
-![](.github/screenshot2.png)
+**Visualize your active TCP connections on a world map — right in your terminal.**
 
+Maperick resolves every outgoing TCP connection to a geographic location and plots it on an ASCII world map. Drill down by server or by process to see exactly where your traffic is going.
 
-## Setup
+<p align="center">
+  <img src="screenshots/map.png" alt="World map view" width="100%">
+</p>
 
-```
-git clone git@github.com:schlunsen/maperick.git
-cd maperick/
+## Features
 
-# Download mmdb city file
-wget https://git.io/GeoLite2-City.mmdb
+- **World map** — see all connections plotted on an ASCII globe
+- **Server view** — browse connected IPs with location, process, and connection count
+- **Process view** — group connections by process with a per-process mini-map
+- **Auto-updating GeoIP** — automatically downloads and caches the MaxMind GeoLite2 database
+- **Lightweight** — pure Rust TUI built with [Ratatui](https://github.com/ratatui/ratatui)
 
-# Run maperick
-cargo run -- -e -p GeoLite2-City.mmdb
+<p align="center">
+  <img src="screenshots/servers.png" alt="Servers view" width="49%">
+  <img src="screenshots/processes.png" alt="Processes view" width="49%">
+</p>
 
-# build maperick
+## Mac App
+
+Maperick also ships as a **native macOS menu-bar app** built with SwiftUI and SceneKit. It lives in your menu bar and features a 3D interactive globe showing your connections in real time. Find it in the `mac_app/` directory.
+
+## Installation
+
+### From source (Rust)
+
+```sh
+git clone https://github.com/schlunsen/maperick.git
+cd maperick
 cargo build --release
-
-# See https://github.com/P3TERX/GeoLite.mmdb for mmdb files
-./target/release/maperick -e -p GeoLite2-City.mmdb 
 ```
 
-[See this repo for mmdb files](https://github.com/P3TERX/GeoLite.mmdb)
----
+### Run
 
+```sh
+# Maperick auto-downloads the GeoLite2 database on first run
+cargo run
 
+# Or run the release binary directly
+./target/release/maperick
+```
 
-Dependencies
-------------
-* Maxmind
-* rs-tui
-* netstat rust
+### Manual GeoIP database
 
+If you prefer to supply your own MaxMind database:
 
+```sh
+wget https://git.io/GeoLite2-City.mmdb
+./target/release/maperick -p GeoLite2-City.mmdb
+```
 
-### Todo
+See [P3TERX/GeoLite.mmdb](https://github.com/P3TERX/GeoLite.mmdb) for alternative mmdb downloads.
 
-- [x] Base setup
-- [x] Replace argh with clap
-- [x] Add netstat retrieval of open connections and their ip
-- [x] Error handling maxdb
-- [x] Add maxmind geolookup
-- [x] Refactor netstats methods to module
-- [x] Display connected ips in table
-- [ ] Refactor on_tick code into modules
-- [ ] Enable copy/paste
-- [ ] Fix drawing of lines to exit from host location
-- [ ] Add new tab with configuration options
-- [ ] Add host public_ip as different marker on map
-- [ ] Add ip's to ignore in configuration
-- [ ] Add to Brew Formulae
+## Usage
+
+```
+maperick [OPTIONS]
+
+Options:
+  -e            Resolve process names for each connection
+  -p <PATH>     Path to a GeoLite2-City.mmdb file
+  -h, --help    Print help
+```
+
+Navigate between tabs with **Tab** / **Shift+Tab** or click the menu items. Use **arrow keys** to scroll through server and process lists.
+
+## License
+
+[MIT](LICENSE)
