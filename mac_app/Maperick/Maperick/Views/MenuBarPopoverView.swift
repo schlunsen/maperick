@@ -90,6 +90,22 @@ struct MenuBarPopoverView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 4)
+            }
+
+            // Weekly summary
+            let weekSummary = state.thisWeekSummary
+            if weekSummary.totalConnections > 0 {
+                HStack(spacing: 6) {
+                    Image(systemName: "chart.bar.fill")
+                        .font(.system(size: 9))
+                        .foregroundColor(.accentColor)
+                    Text("This week: \(weekSummary.uniqueIPs) IPs, \(weekSummary.totalConnections) connections")
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
 
                 Divider()
             }

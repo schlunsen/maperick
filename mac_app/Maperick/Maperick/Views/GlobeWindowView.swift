@@ -35,6 +35,7 @@ struct GlobeWindowView: View {
     @State private var selectedProcess: String? = nil
     @State private var followMode: Bool = false
     @State private var isHoveringClose: Bool = false
+    @State private var showStatsPanel: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -135,9 +136,10 @@ struct GlobeWindowView: View {
                     Text("Servers").tag(0)
                     Text("Processes").tag(1)
                     Text("History").tag(2)
+                    Text("Stats").tag(3)
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 280)
+                .frame(width: 340)
 
                 Divider()
                     .frame(height: 20)
@@ -214,6 +216,40 @@ struct GlobeWindowView: View {
                             }
                         }
                     }
+                case 3:
+                    HStack(spacing: 8) {
+                        Image(systemName: "chart.bar")
+                            .font(.system(size: 10))
+                            .foregroundColor(.accentColor)
+                        Text("\(state.allTimeSummary?.totalDays ?? 0) days tracked")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+
+                        if let summary = state.allTimeSummary, summary.uniqueIPs > 0 {
+                            Text("·")
+                                .foregroundColor(.secondary)
+                            Text("\(summary.uniqueIPs) unique IPs")
+                                .font(.system(size: 11))
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
+
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                showStatsPanel.toggle()
+                            }
+                        }) {
+                            HStack(spacing: 3) {
+                                Image(systemName: showStatsPanel ? "chevron.down" : "chevron.up")
+                                    .font(.system(size: 8, weight: .bold))
+                                Text(showStatsPanel ? "Hide" : "Details")
+                                    .font(.system(size: 10, weight: .medium))
+                            }
+                            .foregroundColor(.accentColor)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 default:
                     EmptyView()
                 }
@@ -223,6 +259,14 @@ struct GlobeWindowView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .frame(height: 40)
+
+            // Expandable stats panel
+            if showStatsPanel {
+                Divider()
+                StatsView(state: state)
+                    .frame(maxHeight: 300)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
         .frame(minWidth: 700, minHeight: 550)
         .background(WindowAccessor())

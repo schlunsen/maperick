@@ -81,6 +81,9 @@ class NetworkMonitor {
     /// Process filter — when set, only show connections from this process on the globe
     var processFilter: String? = nil
 
+    /// Called after each poll completes — used by ConnectionState to record stats
+    var onPollComplete: (() -> Void)?
+
     private var timer: Timer?
     private var geoIPService: GeoIPService?
     private var userLocation: (latitude: Double, longitude: Double)?
@@ -261,6 +264,9 @@ class NetworkMonitor {
                 } else {
                     self.globeScene.updateConnections(servers: sortedServers)
                 }
+
+                // Notify ConnectionState to record stats
+                self.onPollComplete?()
             }
         }
     }
