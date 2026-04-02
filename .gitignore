@@ -7,6 +7,10 @@
 *.orig
 .claude/
 
+# Build artifacts
+build_mac/
+*.dmg
+
 # Xcode
 *.xcuserdata/
 xcuserdata/

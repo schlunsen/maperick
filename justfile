@@ -42,6 +42,51 @@ lint:
 fmt:
     cargo fmt
 
+# Build macOS .app and create a DMG (requires create-dmg: brew install create-dmg)
+dmg:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Building Maperick.app (Release)..."
+    xcodebuild build \
+        -project mac_app/Maperick/Maperick.xcodeproj \
+        -scheme Maperick \
+        -configuration Release \
+        -derivedDataPath build_mac \
+        -quiet
+    APP_PATH="build_mac/Build/Products/Release/Maperick.app"
+    if [ ! -d "$APP_PATH" ]; then
+        echo "ERROR: Maperick.app not found at $APP_PATH"
+        exit 1
+    fi
+    echo "Creating DMG..."
+    rm -f Maperick.dmg
+    create-dmg \
+        --volname "Maperick" \
+        --window-pos 200 120 \
+        --window-size 600 400 \
+        --icon-size 100 \
+        --icon "Maperick.app" 175 185 \
+        --app-drop-link 425 185 \
+        "Maperick.dmg" \
+        "$APP_PATH"
+    echo "✓ Maperick.dmg created ($(du -h Maperick.dmg | cut -f1))"
+
+# Upload Maperick.dmg to the latest GitHub release (requires gh CLI)
+upload-dmg:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -f Maperick.dmg ]; then
+        echo "ERROR: Maperick.dmg not found. Run 'just dmg' first."
+        exit 1
+    fi
+    TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName')
+    echo "Uploading Maperick.dmg to release $TAG..."
+    gh release upload "$TAG" Maperick.dmg --clobber
+    echo "✓ Uploaded to release $TAG"
+
+# Build DMG and upload to latest GitHub release
+release-dmg: dmg upload-dmg
+
 # Serve GitHub Pages locally (requires Python 3)
 pages:
     @echo "Serving docs/ at http://localhost:8000"
