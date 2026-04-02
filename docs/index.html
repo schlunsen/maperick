@@ -12,7 +12,8 @@
   <meta property="og:title" content="Maperick — Real-time TCP Connection Visualizer">
   <meta property="og:description" content="Visualize your network connections on a world map — right in your terminal. Built with Rust.">
   <meta property="og:type" content="website">
-  <meta property="og:image" content=".github/screenshot.png">
+  <meta property="og:image" content="https://raw.githubusercontent.com/schlunsen/maperick/main/.github/screenshot.png">
+  <meta property="og:url" content="https://schlunsen.github.io/maperick/">
 
   <!-- Favicon: globe emoji as SVG data URI -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
@@ -26,6 +27,38 @@
 </head>
 <body>
 
+  <!-- ========== HEADER / NAV ========== -->
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <a href="#" class="header-logo">Maperick</a>
+      <nav class="header-nav">
+        <a href="#features" class="header-nav__link">Features</a>
+        <a href="#demo" class="header-nav__link">Screenshots</a>
+        <a href="#platforms" class="header-nav__link">Platforms</a>
+        <a href="#installation" class="header-nav__link">Install</a>
+        <a href="https://github.com/schlunsen/maperick/releases/latest" class="header-nav__link header-nav__download" target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download
+        </a>
+        <a href="https://github.com/schlunsen/maperick" class="header-nav__link header-nav__github" target="_blank" rel="noopener noreferrer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+          </svg>
+          GitHub
+        </a>
+      </nav>
+      <button class="header-mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
   <!-- ========== HERO ========== -->
   <section id="hero" class="hero">
     <div id="globe-container"></div>
@@ -35,6 +68,18 @@
       <div class="hero-badges">
         <span class="badge">Built with Rust</span>
         <span class="badge badge-accent">Real-time TUI</span>
+        <span class="badge">Native Mac App</span>
+      </div>
+      <div class="hero-cta">
+        <a href="https://github.com/schlunsen/maperick/releases/latest" class="btn-primary" target="_blank" rel="noopener noreferrer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download Latest Release
+        </a>
+        <a href="#platforms" class="btn-secondary">See all platforms</a>
       </div>
       <a href="#features" class="scroll-indicator" aria-label="Scroll down">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -46,194 +91,266 @@
 
   <!-- ========== FEATURES ========== -->
   <section id="features" class="section features">
-    <div class="container">
-      <h2 class="section-title">Features</h2>
-      <p class="section-subtitle">Everything you need to understand your network at a glance.</p>
-      <div class="features-grid">
-        <div class="feature-card fade-in">
-          <div class="feature-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-          </div>
-          <h3>Real-time Monitoring</h3>
-          <p>Tracks active TCP connections continuously with configurable refresh intervals. Watch connections appear and disappear as your system communicates with the world.</p>
+    <h2 class="section-title">Features</h2>
+    <p class="section-subtitle">Everything you need to understand your network at a glance.</p>
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
         </div>
-        <div class="feature-card fade-in">
-          <div class="feature-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="2" y1="12" x2="22" y2="12"></line>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-            </svg>
-          </div>
-          <h3>Geolocation Mapping</h3>
-          <p>Pinpoints server locations using MaxMind GeoLite2 databases. Every connection is resolved to a geographic coordinate and rendered on the world map.</p>
+        <h3>Real-time Monitoring</h3>
+        <p>Tracks active TCP connections continuously with configurable refresh intervals. Watch connections appear and disappear as your system communicates with the world.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
         </div>
-        <div class="feature-card fade-in">
-          <div class="feature-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9"></path>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-            </svg>
-          </div>
-          <h3>Connection History</h3>
-          <p>Persists all-time connection statistics in a local SQLite database. Track which IPs you've connected to, when, and how often &mdash; across sessions.</p>
+        <h3>Geolocation Mapping</h3>
+        <p>Pinpoints server locations using MaxMind GeoLite2 databases. Every connection is resolved to a geographic coordinate and rendered on the world map.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
         </div>
-        <div class="feature-card fade-in">
-          <div class="feature-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-              <line x1="8" y1="21" x2="16" y2="21"></line>
-              <line x1="12" y1="17" x2="12" y2="21"></line>
-            </svg>
-          </div>
-          <h3>Interactive TUI</h3>
-          <p>Navigate with keyboard shortcuts, switch between multiple tabs, and view color-coded connection statuses. A full terminal UI powered by Ratatui.</p>
+        <h3>Connection History</h3>
+        <p>Persists all-time connection statistics in a local SQLite database. Track which IPs you've connected to, when, and how often &mdash; across sessions.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
         </div>
-        <div class="feature-card fade-in">
-          <div class="feature-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-          </div>
-          <h3>Per-Process Tracking</h3>
-          <p>See which processes are making connections. The Processes tab shows a split view with per-process connection maps and statistics.</p>
+        <h3>Interactive TUI</h3>
+        <p>Navigate with keyboard shortcuts, switch between multiple tabs, and view color-coded connection statuses. A full terminal UI powered by Ratatui.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
         </div>
-        <div class="feature-card fade-in">
-          <div class="feature-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-          </div>
-          <h3>Auto GeoIP Download</h3>
-          <p>Automatically downloads the GeoLite2 database on first run. No manual setup required &mdash; just run and start exploring your network.</p>
+        <h3>Per-Process Tracking</h3>
+        <p>See which processes are making connections. The Processes tab shows a split view with per-process connection maps and statistics.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
         </div>
+        <h3>Auto GeoIP Download</h3>
+        <p>Automatically downloads the GeoLite2 database on first run. No manual setup required &mdash; just run and start exploring your network.</p>
       </div>
     </div>
   </section>
 
   <!-- ========== DEMO / SCREENSHOT ========== -->
   <section id="demo" class="section demo">
-    <div class="container">
-      <h2 class="section-title">See it in action</h2>
-      <p class="section-subtitle">A full-featured network visualization running entirely in your terminal.</p>
-
-      <!-- Screenshots Grid -->
-      <div class="screenshots-grid fade-in">
-        <div class="screenshot-item">
-          <div class="terminal-window">
-            <div class="terminal-header">
-              <div class="terminal-dots">
-                <span class="dot dot-red"></span>
-                <span class="dot dot-yellow"></span>
-                <span class="dot dot-green"></span>
-              </div>
-              <span class="terminal-title">maperick &mdash; Map Tab</span>
+    <h2 class="section-title">See it in action</h2>
+    <p class="section-subtitle">A full-featured network visualization running entirely in your terminal.</p>
+    <div class="screenshots-grid fade-in">
+      <div class="screenshot-item">
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
             </div>
-            <div class="terminal-body">
-              <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/map.png" alt="Map view showing TCP connections on a world map" class="screenshot">
-            </div>
+            <span class="terminal-title">maperick &mdash; Map Tab</span>
           </div>
-          <p class="caption">World map view with geolocated connections</p>
-        </div>
-
-        <div class="screenshot-item">
-          <div class="terminal-window">
-            <div class="terminal-header">
-              <div class="terminal-dots">
-                <span class="dot dot-red"></span>
-                <span class="dot dot-yellow"></span>
-                <span class="dot dot-green"></span>
-              </div>
-              <span class="terminal-title">maperick &mdash; Servers Tab</span>
-            </div>
-            <div class="terminal-body">
-              <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/servers.png" alt="Servers view with connection statistics" class="screenshot">
-            </div>
+          <div class="terminal-body">
+            <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/map.png" alt="Map view showing TCP connections on a world map" class="screenshot">
           </div>
-          <p class="caption">Server statistics with all-time history</p>
         </div>
-
-        <div class="screenshot-item">
-          <div class="terminal-window">
-            <div class="terminal-header">
-              <div class="terminal-dots">
-                <span class="dot dot-red"></span>
-                <span class="dot dot-yellow"></span>
-                <span class="dot dot-green"></span>
-              </div>
-              <span class="terminal-title">maperick &mdash; Processes Tab</span>
+        <p class="caption">World map view with geolocated connections</p>
+      </div>
+      <div class="screenshot-item">
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
             </div>
-            <div class="terminal-body">
-              <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/processes.png" alt="Processes view showing per-process connections" class="screenshot">
-            </div>
+            <span class="terminal-title">maperick &mdash; Servers Tab</span>
           </div>
-          <p class="caption">Per-process connection tracking</p>
+          <div class="terminal-body">
+            <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/servers.png" alt="Servers view with connection statistics" class="screenshot">
+          </div>
         </div>
+        <p class="caption">Server statistics with all-time history</p>
+      </div>
+      <div class="screenshot-item">
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="terminal-title">maperick &mdash; Processes Tab</span>
+          </div>
+          <div class="terminal-body">
+            <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/processes.png" alt="Processes view showing per-process connections" class="screenshot">
+          </div>
+        </div>
+        <p class="caption">Per-process connection tracking</p>
       </div>
     </div>
   </section>
 
-  <!-- ========== INSTALLATION ========== -->
-  <section id="installation" class="section installation">
-    <div class="container">
-      <h2 class="section-title">Installation</h2>
-      <p class="section-subtitle">Get up and running in under a minute.</p>
-      <div class="code-window fade-in">
-        <div class="code-header">
-          <div class="terminal-dots">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
-          </div>
-          <span class="code-lang">bash</span>
+  <!-- ========== PLATFORMS ========== -->
+  <section id="platforms" class="section platforms">
+    <h2 class="section-title">Two ways to explore your network</h2>
+    <p class="section-subtitle">A lightweight CLI for power users and a native macOS app for everyone else.</p>
+    <div class="platforms-grid">
+      <!-- CLI Card -->
+      <div class="platform-card fade-in">
+        <div class="platform-badge">CLI</div>
+        <div class="platform-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
         </div>
-        <pre class="code-block"><code><span class="code-comment"># Clone and build</span>
+        <h3>Terminal App</h3>
+        <p class="platform-desc">A single binary with zero runtime dependencies. Built in Rust for minimal memory usage and instant startup. Runs on Linux, macOS, and Windows.</p>
+        <ul class="platform-highlights">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Small footprint &mdash; single static binary
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Cross-platform: Linux, macOS, Windows
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Interactive TUI powered by Ratatui
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            SSH-friendly &mdash; works over remote sessions
+          </li>
+        </ul>
+        <div class="platform-install">
+          <code>cargo install maperick</code>
+        </div>
+      </div>
+      <!-- Mac App Card -->
+      <div class="platform-card platform-card--mac fade-in">
+        <div class="platform-badge platform-badge--mac">macOS</div>
+        <div class="platform-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+            <path d="M2 12h20"></path>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </div>
+        <h3>Native Mac App</h3>
+        <p class="platform-desc">A full SwiftUI application with a 3D globe visualization, menu bar integration, and native macOS look and feel. Installable via DMG.</p>
+        <ul class="platform-highlights">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Native SwiftUI interface
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            3D globe with SceneKit
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Menu bar quick-access widget
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ccff" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            DMG installer on GitHub Releases
+          </li>
+        </ul>
+        <a href="https://github.com/schlunsen/maperick/releases/latest" class="platform-download" target="_blank" rel="noopener noreferrer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download DMG
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== INSTALLATION & USAGE — side by side ========== -->
+  <section id="installation" class="section" style="background: var(--bg-surface);">
+    <h2 class="section-title">Get started</h2>
+    <p class="section-subtitle">Clone, build, and run &mdash; or just use cargo install.</p>
+    <div class="install-usage-row">
+      <div class="section-col fade-in">
+        <h3 class="section-col-title">Installation</h3>
+        <p class="section-col-sub">Get up and running in under a minute.</p>
+        <div class="code-window">
+          <div class="code-header">
+            <div class="terminal-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="code-lang">bash</span>
+          </div>
+          <pre class="code-block"><code><span class="code-comment"># Clone and build</span>
 <span class="code-cmd">git clone</span> https://github.com/schlunsen/maperick.git
 <span class="code-cmd">cd</span> maperick
 <span class="code-cmd">cargo build</span> --release
 
 <span class="code-comment"># Run with your GeoLite2 database</span>
 <span class="code-cmd">./target/release/maperick</span> -e -p GeoLite2-City.mmdb</code></pre>
-      </div>
-    </div>
-  </section>
-
-  <!-- ========== CLI USAGE ========== -->
-  <section id="usage" class="section usage">
-    <div class="container">
-      <h2 class="section-title">CLI Usage</h2>
-      <p class="section-subtitle">Simple, focused command-line interface.</p>
-      <div class="code-window fade-in">
-        <div class="code-header">
-          <div class="terminal-dots">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
-          </div>
-          <span class="code-lang">terminal</span>
         </div>
-        <pre class="code-block"><code><span class="code-cmd">maperick</span> [OPTIONS]
+      </div>
+      <div class="section-col fade-in">
+        <h3 class="section-col-title">CLI Usage</h3>
+        <p class="section-col-sub">Simple, focused command-line interface.</p>
+        <div class="code-window">
+          <div class="code-header">
+            <div class="terminal-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="code-lang">terminal</span>
+          </div>
+          <pre class="code-block"><code><span class="code-cmd">maperick</span> [OPTIONS]
 
 <span class="code-heading">Options:</span>
   <span class="code-flag">-t, --tick-rate</span> <span class="code-arg">&lt;ms&gt;</span>       Update interval <span class="code-comment">(default: 250)</span>
   <span class="code-flag">-p, --path</span> <span class="code-arg">&lt;PATH&gt;</span>          Path to GeoLite2 MMDB file
   <span class="code-flag">-e, --enhanced-graphics</span>    Enable Unicode symbols
   <span class="code-flag">-h, --help</span>                 Print help</code></pre>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ========== FOOTER ========== -->
   <footer class="footer">
-    <div class="container footer-inner">
+    <div class="footer-inner">
       <div class="footer-brand">
         <span class="footer-logo">Maperick</span>
         <span class="footer-rust">Built with Rust 🦀</span>
@@ -250,6 +367,16 @@
       </div>
     </div>
   </footer>
+
+  <!-- Import map so Three.js sub-modules can resolve bare "three" specifier -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
 
   <!-- Main entry: globe + animations -->
   <script type="module">
@@ -270,7 +397,6 @@
           const globeScroll = createGlobeScrollHandler({
             globeElement: container,
             setRotationSpeed: (factor) => {
-              // Adjust the auto-rotation based on scroll
               globe.globeGroup.userData.rotationFactor = factor;
             },
           });
@@ -283,7 +409,7 @@
       // Init all scroll animations
       initAnimations();
 
-      // Also handle the .fade-in elements (from CSS agent)
+      // Handle .fade-in elements
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {

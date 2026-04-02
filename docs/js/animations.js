@@ -105,36 +105,53 @@ function initHeroParallax() {
 }
 
 // ---------------------------------------------------------------------------
-// 3. Sticky header
+// 3. Site header (scroll background + active nav highlighting + mobile toggle)
 // ---------------------------------------------------------------------------
 
-function initStickyHeader() {
-  let header = document.querySelector('.sticky-header');
+function initSiteHeader() {
+  const header = document.getElementById('site-header');
+  if (!header) return;
 
-  // If no sticky header exists in the DOM, create one
-  if (!header) {
-    header = document.createElement('header');
-    header.className = 'sticky-header';
-    header.setAttribute('aria-hidden', 'true');
-    header.innerHTML = `
-      <a href="#" class="sticky-header__logo">Maperick</a>
-      <a href="https://github.com/schlunsen/maperick"
-         class="sticky-header__github"
-         target="_blank"
-         rel="noopener noreferrer">
-        GitHub
-      </a>
-    `;
-    document.body.prepend(header);
+  const navLinks = header.querySelectorAll('.header-nav__link[href^="#"]');
+  const sections = [];
+  navLinks.forEach((link) => {
+    const id = link.getAttribute('href');
+    const section = document.querySelector(id);
+    if (section) sections.push({ link, section });
+  });
+
+  // Mobile toggle
+  const toggle = document.getElementById('mobile-toggle');
+  const nav = header.querySelector('.header-nav');
+  if (toggle && nav) {
+    toggle.addEventListener('click', () => {
+      toggle.classList.toggle('open');
+      nav.classList.toggle('header-nav--open');
+    });
+    // Close mobile nav when a link is clicked
+    navLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        toggle.classList.remove('open');
+        nav.classList.remove('header-nav--open');
+      });
+    });
   }
 
-  const hero = document.querySelector('.hero');
-  const triggerOffset = hero ? hero.offsetHeight * 0.6 : 400;
-
   function onScroll(scrollY) {
-    const show = scrollY > triggerOffset;
-    header.classList.toggle('sticky-header--visible', show);
-    header.setAttribute('aria-hidden', String(!show));
+    // Background on scroll
+    header.classList.toggle('site-header--scrolled', scrollY > 50);
+
+    // Active section highlighting
+    let current = null;
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const rect = sections[i].section.getBoundingClientRect();
+      if (rect.top <= 120) {
+        current = sections[i];
+        break;
+      }
+    }
+    sections.forEach(({ link }) => link.classList.remove('active'));
+    if (current) current.link.classList.add('active');
   }
 
   scrollHandlers.push(onScroll);
@@ -211,7 +228,9 @@ function initSmoothScroll() {
     if (!target) return;
 
     e.preventDefault();
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const headerHeight = 64;
+    const top = target.getBoundingClientRect().top + window.scrollY - headerHeight;
+    window.scrollTo({ top, behavior: 'smooth' });
 
     // Update URL without jumping
     if (history.pushState) {
@@ -302,7 +321,7 @@ export function initAnimations() {
 
   initScrollFadeIns();
   initHeroParallax();
-  initStickyHeader();
+  initSiteHeader();
   initTypingEffect();
   initSmoothScroll();
 
