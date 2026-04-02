@@ -23,11 +23,9 @@ enum AppLauncher {
         end tell
         """
 
-        if let scriptData = script.data(using: .utf8) {
-            let task = Process()
-            task.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-            task.arguments = ["-e", script]
-            try? task.run()
-        }
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        task.arguments = ["-e", script]
+        try? task.run()
     }
 }

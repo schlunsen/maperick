@@ -49,7 +49,7 @@ class GlobeScene: SCNScene {
         let atmosphere = createAtmosphereNode()
         rootNode.addChildNode(atmosphere)
 
-        let stars = createStarField()
+        let stars = createStarField().flattenedClone()
         rootNode.addChildNode(stars)
 
         setupLighting()
@@ -61,7 +61,7 @@ class GlobeScene: SCNScene {
 
     private func createGlobeNode() -> SCNNode {
         let sphere = SCNSphere(radius: globeRadius)
-        sphere.segmentCount = 64
+        sphere.segmentCount = 48
 
         let material = SCNMaterial()
 
@@ -109,7 +109,7 @@ class GlobeScene: SCNScene {
 
     private func createAtmosphereNode() -> SCNNode {
         let sphere = SCNSphere(radius: globeRadius * 1.025)
-        sphere.segmentCount = 48
+        sphere.segmentCount = 32
         let material = SCNMaterial()
         material.diffuse.contents = NSColor.clear
         material.emission.contents = NSColor(red: 0.3, green: 0.5, blue: 1.0, alpha: 0.15)
@@ -127,7 +127,7 @@ class GlobeScene: SCNScene {
     // MARK: - Stars
 
     private func createStarField() -> SCNNode {
-        let count = 1200
+        let count = 600
         var positions: [Float] = []
         var colors: [Float] = []
         for _ in 0..<count {
@@ -482,8 +482,8 @@ class GlobeScene: SCNScene {
         for server in servers {
             guard server.latitude != 0 || server.longitude != 0 else { continue }
 
-            if let existingPin = connectionPins[server.ip] {
-                updatePinSize(existingPin, count: server.connectionCount)
+            if connectionPins[server.ip] != nil {
+                // Pin already exists, nothing to update (dots are uniform size)
             } else {
                 let pin = createPinNode(for: server)
                 globeNode.addChildNode(pin)
@@ -545,7 +545,7 @@ class GlobeScene: SCNScene {
         let maxRingRadius: CGFloat = 0.37  // 0.02 + 0.35
         let maxPipeRadius: CGFloat = 0.004
         let torus = SCNTorus(ringRadius: maxRingRadius, pipeRadius: maxPipeRadius)
-        torus.ringSegmentCount = 48
+        torus.ringSegmentCount = 24
         torus.pipeSegmentCount = 6
 
         let mat = SCNMaterial()
@@ -595,7 +595,7 @@ class GlobeScene: SCNScene {
         let maxRingRadius: CGFloat = 0.53  // 0.03 + 0.5
         let maxPipeRadius: CGFloat = 0.006
         let torus = SCNTorus(ringRadius: maxRingRadius, pipeRadius: maxPipeRadius)
-        torus.ringSegmentCount = 48
+        torus.ringSegmentCount = 24
         torus.pipeSegmentCount = 6
 
         let mat = SCNMaterial()
@@ -634,9 +634,6 @@ class GlobeScene: SCNScene {
         ringNode.runAction(SCNAction.sequence([wait, SCNAction.repeatForever(SCNAction.sequence([expand, reset, pause]))]))
     }
 
-    private func updatePinSize(_ node: SCNNode, count: Int) {
-        // Dots are uniform size
-    }
 
     // MARK: - Ripple Effect (for new connections)
 
@@ -655,7 +652,7 @@ class GlobeScene: SCNScene {
         // Create torus at its MAXIMUM target size from the start
         let fullRingRadius: CGFloat = 0.02 + maxRadius
         let torus = SCNTorus(ringRadius: fullRingRadius, pipeRadius: 0.008)
-        torus.ringSegmentCount = 48
+        torus.ringSegmentCount = 24
         torus.pipeSegmentCount = 6
 
         let mat = SCNMaterial()
@@ -722,7 +719,7 @@ class GlobeScene: SCNScene {
         let endPos = latLonToPosition(latitude: toLat, longitude: toLon)
 
         // Compute arc points via great-circle slerp with elevation — high segment count for smoothness
-        let segments = 96
+        let segments = 48
         let s = simd_float3(Float(startPos.x), Float(startPos.y), Float(startPos.z))
         let e = simd_float3(Float(endPos.x), Float(endPos.y), Float(endPos.z))
         let arcDistance = simd_length(e - s)
@@ -767,7 +764,7 @@ class GlobeScene: SCNScene {
         addBeamPulse(to: coreNode, duration: 3.0 + Double.random(in: 0...1.0))
 
         // --- Traveling particles (multiple, staggered, bidirectional) ---
-        let particleCount = arcDistance > 3.0 ? 3 : 2
+        let particleCount = arcDistance > 3.0 ? 2 : 1
         for i in 0..<particleCount {
             let delay = Double(i) * (1.2 + Double.random(in: 0...0.5))
             // Alternate direction: even = outbound (host→server), odd = inbound (server→host)
@@ -898,7 +895,7 @@ class GlobeScene: SCNScene {
         particleNode.addChildNode(haloNode)
 
         // Small trailing particles (comet tail effect)
-        let tailCount = 4
+        let tailCount = 2
         var tailNodes: [SCNNode] = []
         for j in 0..<tailCount {
             let tailSphere = SCNSphere(radius: CGFloat(0.012 - Double(j) * 0.002))

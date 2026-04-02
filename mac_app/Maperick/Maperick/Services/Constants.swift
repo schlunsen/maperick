@@ -28,7 +28,7 @@ nonisolated enum AppConstants {
     }
 
     /// Polling interval in seconds for network stats
-    static let pollInterval: TimeInterval = 2.0
+    static let pollInterval: TimeInterval = 5.0
 
     /// Maximum number of recent connection counts to track for sparklines
     static let sparklineWindow = 60

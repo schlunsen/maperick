@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import Observation
 
 // MARK: - Data Models
@@ -84,6 +85,7 @@ class NetworkMonitor {
     private var geoIPService: GeoIPService?
     private var userLocation: (latitude: Double, longitude: Double)?
     private var didFetchUserLocation = false
+    private var appObservers: [Any] = []
 
     func start() {
         geoIPService = GeoIPService()
@@ -98,6 +100,27 @@ class NetworkMonitor {
         }
         // Do an immediate poll
         poll()
+
+        // Pause polling when app is in background to save CPU
+        let nc = NotificationCenter.default
+        let resign = nc.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in
+                self?.timer?.invalidate()
+                self?.timer = nil
+            }
+        }
+        let activate = nc.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, self.timer == nil else { return }
+                self.poll()
+                self.timer = Timer.scheduledTimer(withTimeInterval: AppConstants.pollInterval, repeats: true) { [weak self] _ in
+                    Task { @MainActor in
+                        self?.poll()
+                    }
+                }
+            }
+        }
+        appObservers = [resign, activate]
     }
 
     /// Fetch the user's public IP address and resolve it to a location
@@ -127,6 +150,10 @@ class NetworkMonitor {
     func stop() {
         timer?.invalidate()
         timer = nil
+        for observer in appObservers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        appObservers = []
     }
 
     private func poll() {
@@ -246,7 +273,7 @@ class NetworkMonitor {
 
         let pipe = Pipe()
         process.standardOutput = pipe
-        process.standardError = Pipe() // suppress errors
+        process.standardError = FileHandle.nullDevice // discard errors to avoid pipe buffer deadlock
 
         do {
             try process.run()
@@ -303,10 +330,7 @@ class NetworkMonitor {
                 || remoteIP.contains(":") // Skip all IPv6 for now
                 || remoteIP.hasPrefix("10.")
                 || remoteIP.hasPrefix("192.168.")
-                || remoteIP.hasPrefix("172.16.") || remoteIP.hasPrefix("172.17.")
-                || remoteIP.hasPrefix("172.18.") || remoteIP.hasPrefix("172.19.")
-                || remoteIP.hasPrefix("172.20.") || remoteIP.hasPrefix("172.2")
-                || remoteIP.hasPrefix("172.30.") || remoteIP.hasPrefix("172.31.") {
+                || Self.isPrivate172Range(remoteIP) {
                 continue
             }
 
@@ -325,5 +349,13 @@ class NetworkMonitor {
         }
 
         return connections
+    }
+
+    /// Check if an IP is in the 172.16.0.0/12 private range (172.16.x.x - 172.31.x.x)
+    nonisolated private static func isPrivate172Range(_ ip: String) -> Bool {
+        guard ip.hasPrefix("172.") else { return false }
+        let parts = ip.split(separator: ".")
+        guard parts.count >= 2, let secondOctet = Int(parts[1]) else { return false }
+        return secondOctet >= 16 && secondOctet <= 31
     }
 }
