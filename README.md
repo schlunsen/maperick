@@ -24,10 +24,6 @@ Maperick resolves every outgoing TCP connection to a geographic location and plo
   <img src="screenshots/processes.png" alt="Processes view" width="49%">
 </p>
 
-## Mac App
-
-Maperick also ships as a **native macOS menu-bar app** built with SwiftUI and SceneKit. It lives in your menu bar and features a 3D interactive globe showing your connections in real time. Find it in the `mac_app/` directory.
-
 ## Installation
 
 ### From source (Rust)
