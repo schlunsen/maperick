@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Presenter — Create</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #1a1520; --bg-surface: #211a2a; --bg-card: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
+      --rose: #f0a6ca; --rose-dark: #7a3e5a; --rose-glow: rgba(240,166,202,0.35);
+      --lavender: #c4b5fd; --blush: #fbc4ab;
+      --text: #ede8f0; --text-muted: #b8afc2; --text-dim: #8a8098; --text-faint: #5e5470;
+      --sage: #a8d5ba; --coral: #f4845f;
+      --font: 'Inter', -apple-system, sans-serif; --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .creator-layout {
+      max-width: 680px; margin: 0 auto; padding: 3rem 2rem 4rem;
+    }
+
+    .creator-header {
+      text-align: center; margin-bottom: 3rem;
+    }
+    .creator-header h1 {
+      font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--rose), var(--lavender), var(--blush));
+      background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; animation: gradientShift 6s ease infinite;
+    }
+    .creator-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.1rem; }
+    @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+    .top-bar {
+      display: flex; justify-content: flex-end; padding: 1rem 2rem; position: fixed; top: 0; right: 0; z-index: 100;
+    }
+
+    /* Settings gear */
+    .settings-btn {
+      background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted);
+      width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .settings-btn:hover { border-color: var(--rose); color: var(--rose); }
+
+    /* Settings panel */
+    .settings-overlay {
+      position: fixed; top: 0; right: -400px; width: 380px; height: 100vh; z-index: 200;
+      background: var(--bg-surface); border-left: 1px solid var(--border);
+      padding: 2rem; overflow-y: auto; transition: right 0.3s ease;
+      box-shadow: -8px 0 30px rgba(0,0,0,0.4);
+    }
+    .settings-overlay.open { right: 0; }
+    .settings-overlay h2 { font-size: 1.2rem; margin-bottom: 1.5rem; color: var(--text); }
+
+    /* Form elements */
+    .field { margin-bottom: 1.25rem; }
+    .field label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field input, .field textarea, .field select {
+      width: 100%; padding: 0.7rem 1rem; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-family: var(--font); font-size: 0.95rem;
+      transition: border-color 0.2s; outline: none;
+    }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--rose); }
+    .field textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+    .field select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8098' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
+    .field .hint { font-size: 0.78rem; color: var(--text-faint); margin-top: 0.3rem; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* Photo upload */
+    .photo-upload-area {
+      border: 2px dashed var(--border); border-radius: 12px; padding: 1.5rem; text-align: center;
+      cursor: pointer; transition: border-color 0.2s; position: relative;
+    }
+    .photo-upload-area:hover { border-color: var(--rose); }
+    .photo-upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .photo-upload-area .upload-label { color: var(--text-dim); font-size: 0.9rem; }
+    .photo-upload-area .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+    .photo-previews { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
+    .photo-thumb { position: relative; width: 80px; height: 80px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+    .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-remove { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: var(--coral); border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; }
+    .photo-name { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: var(--text); font-size: 0.55rem; padding: 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Section dividers */
+    .section-label {
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--rose); margin: 2rem 0 1rem; padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(240,166,202,0.15);
+    }
+
+    /* Generate button */
+    .generate-btn {
+      display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+      width: 100%; padding: 1rem; margin-top: 2rem;
+      background: linear-gradient(135deg, var(--rose-dark), var(--rose));
+      color: white; font-weight: 700; font-size: 1.1rem; font-family: var(--font);
+      border: none; border-radius: 14px; cursor: pointer;
+      transition: all 0.3s; box-shadow: 0 4px 20px var(--rose-glow);
+    }
+    .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(240,166,202,0.45); }
+    .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .generate-btn svg { flex-shrink: 0; }
+
+    /* Progress section */
+    .progress-section { display: none; margin-top: 2rem; }
+    .progress-section.active { display: block; }
+    .progress-bar { height: 6px; background: var(--bg-card); border-radius: 3px; overflow: hidden; margin-bottom: 1rem; }
+    .progress-bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--rose), var(--lavender)); border-radius: 3px; transition: width 0.5s ease; }
+    .progress-log {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1rem; max-height: 200px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.8rem;
+    }
+    .log-line { color: var(--text-dim); padding: 0.2rem 0; }
+    .log-line:last-child { color: var(--sage); }
+
+    /* Settings form */
+    .test-result { font-size: 0.85rem; margin-top: 0.5rem; font-family: var(--font-mono); }
+    .test-result.success { color: var(--sage); }
+    .test-result.error { color: var(--coral); }
+
+    .btn-row { display: flex; gap: 0.75rem; margin-top: 1rem; }
+    .btn-sm {
+      padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text-muted); font-family: var(--font);
+      font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-sm:hover { border-color: var(--rose); color: var(--rose); }
+    .btn-sm.primary { background: var(--rose-dark); border-color: var(--rose); color: white; }
+    .btn-sm.primary:hover { background: var(--rose); }
+
+    /* Existing project link */
+    .existing-link {
+      text-align: center; margin-top: 1.5rem;
+    }
+    .existing-link a {
+      color: var(--text-dim); font-size: 0.9rem; text-decoration: none;
+      transition: color 0.2s;
+    }
+    .existing-link a:hover { color: var(--rose); }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .creator-layout { padding: 2rem 1rem 3rem; }
+      .creator-header h1 { font-size: 1.8rem; }
+      .row { grid-template-columns: 1fr; }
+      .settings-overlay { width: 100%; right: -100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Settings gear -->
+  <div class="top-bar">
+    <button class="settings-btn" id="settings-btn" title="LLM Settings">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Settings panel (slide-in) -->
+  <div class="settings-overlay" id="settings-panel">
+    <h2>LLM Settings</h2>
+    <div class="field">
+      <label>Provider</label>
+      <select id="provider-select"></select>
+    </div>
+    <div class="field">
+      <label>Model</label>
+      <select id="model-select"></select>
+    </div>
+    <div class="field">
+      <label>API Key</label>
+      <input type="password" id="api-key" placeholder="sk-... or key-..." autocomplete="off" />
+    </div>
+    <div class="field" id="custom-url-group" style="display:none;">
+      <label>Custom Base URL</label>
+      <input type="url" id="custom-url" placeholder="https://your-api.com" />
+    </div>
+    <div class="btn-row">
+      <button class="btn-sm" id="test-connection">Test Connection</button>
+      <button class="btn-sm primary" id="save-settings">Save</button>
+    </div>
+    <div class="test-result" id="test-result"></div>
+  </div>
+
+  <!-- Main form -->
+  <div class="creator-layout">
+    <div class="creator-header">
+      <h1>Create Presentation</h1>
+      <p>Describe your topic and let AI build the slides.</p>
+    </div>
+
+    <div class="section-label">Topic</div>
+
+    <div class="field">
+      <label>What's it about?</label>
+      <input type="text" id="topic" placeholder="e.g. Our Q1 product roadmap, Introduction to machine learning..." />
+    </div>
+
+    <div class="field">
+      <label>Description <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <textarea id="description" placeholder="Key points, goals, context... the more detail you give, the better the result."></textarea>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Audience</label>
+        <input type="text" id="audience" placeholder="e.g. Investors, Team, Students" />
+      </div>
+      <div class="field">
+        <label>Tone</label>
+        <select id="tone">
+          <option value="professional">Professional</option>
+          <option value="casual">Casual</option>
+          <option value="technical">Technical</option>
+          <option value="inspirational">Inspirational</option>
+          <option value="educational">Educational</option>
+          <option value="fun">Fun / Playful</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Number of slides</label>
+      <select id="slide-count">
+        <option value="5">5 (Quick)</option>
+        <option value="8" selected>8 (Standard)</option>
+        <option value="12">12 (Detailed)</option>
+        <option value="15">15 (In-depth)</option>
+      </select>
+    </div>
+
+    <div class="section-label">Photos <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+
+    <div class="photo-upload-area">
+      <input type="file" id="photo-upload" accept="image/*" multiple />
+      <div class="upload-icon">+</div>
+      <div class="upload-label">Drop photos here or click to browse</div>
+    </div>
+    <div class="photo-previews" id="photo-preview"></div>
+
+    <div class="section-label">Audio <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+
+    <div class="field">
+      <label>HuggingFace Token</label>
+      <input type="password" id="hf-token" placeholder="hf_..." autocomplete="off" />
+      <div class="hint">For AI narration &amp; image generation. Get one free at huggingface.co/settings/tokens</div>
+    </div>
+
+    <button class="generate-btn" id="generate-btn">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      Generate Presentation
+    </button>
+
+    <div class="progress-section" id="progress-section">
+      <div class="progress-bar"><div class="progress-bar-fill" id="progress-bar-fill"></div></div>
+      <div class="progress-log" id="progress-log"></div>
+    </div>
+
+    <div class="existing-link">
+      <a href="editor.html">or open existing project in editor &rarr;</a>
+    </div>
+  </div>
+
+  <script src="studio/llm-client.js"></script>
+  <script src="studio/slide-templates.js"></script>
+  <script src="studio/asset-generator.js"></script>
+  <script src="studio/creator.js"></script>
+</body>
+</html>

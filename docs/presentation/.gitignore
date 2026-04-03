@@ -1,0 +1,21 @@
+.DS_Store
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+.env
+.env.*
+
+# Python virtualenv
+.venv/
+.gstack/
+
+# Voice cloning test/scratch files
+qwen3_tts_test/
+voice-refs/downloads/
+voice-refs/*_yt.wav
+voice-refs/*_short.wav
+voice-refs/*_long.wav
+voice-refs/yt_*.wav
+voice-refs/pamela_*.wav

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Maperick — Visualize Your Network Connections</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="engine/presentation-styles.css" />
+    <script src="engine/three.min.js"></script>
+</head>
+<body>
+
+  <!-- Three.js background canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="presentation" id="presentation">
+    <!-- Slide Counter -->
+    <div class="slide-counter" id="slide-counter">1 / 8</div>
+
+    <!-- Audio Controls -->
+    <div class="audio-controls" id="audio-controls">
+      <div class="audio-group audio-group--voice">
+        <button class="audio-toggle" id="audio-toggle" aria-label="Toggle narration" title="Toggle narration (A)">
+          <svg class="audio-icon audio-on" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+          </svg>
+          <svg class="audio-icon audio-off" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <line x1="23" y1="9" x2="17" y2="15" />
+            <line x1="17" y1="9" x2="23" y2="15" />
+          </svg>
+        </button>
+        <input type="range" class="volume-slider volume-slider--voice" id="volume-slider" min="0" max="100" value="60" aria-label="Voice Volume" title="Voice volume" />
+        <div class="audio-progress" id="audio-progress">
+          <div class="audio-progress-bar" id="audio-progress-bar"></div>
+        </div>
+      </div>
+      <div class="audio-sep"></div>
+      <div class="audio-group audio-group--music">
+        <button class="audio-toggle music-toggle" id="music-toggle" aria-label="Toggle background music" title="Toggle music (M)">
+          <svg class="audio-icon audio-on" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18V5l12-2v13" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="16" r="3" />
+          </svg>
+          <svg class="audio-icon audio-off" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <path d="M9 18V5l12-2v13" opacity="0.4" />
+            <circle cx="6" cy="18" r="3" opacity="0.4" />
+            <circle cx="18" cy="16" r="3" opacity="0.4" />
+            <line x1="1" y1="1" x2="23" y2="23" />
+          </svg>
+        </button>
+        <input type="range" class="volume-slider volume-slider--music" id="music-volume-slider" min="0" max="100" value="30" aria-label="Music Volume" title="Music volume" />
+      </div>
+    </div>
+
+    <!-- Presenter Avatar -->
+    <div class="presenter-bubble" id="presenter-bubble">
+      <div class="presenter-ring" id="presenter-ring">
+        <svg class="presenter-ring-svg" viewBox="0 0 92 92">
+          <circle class="presenter-ring-stroke" id="presenter-ring-stroke" cx="46" cy="46" r="45"/>
+        </svg>
+      </div>
+      <div class="presenter-shockwave" id="presenter-shockwave-1"></div>
+      <div class="presenter-shockwave" id="presenter-shockwave-2"></div>
+      <div class="presenter-avatar" id="presenter-avatar">
+        <!-- Presenter A: slides 1-4 -->
+        <svg class="presenter-svg presenter-a" id="presenter-a" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <g class="presenter-head">
+            <ellipse class="presenter-jaw" cx="60" cy="80" rx="24" ry="18" fill="#fdd9b5"/>
+            <ellipse cx="60" cy="58" rx="32" ry="32" fill="#fdd9b5"/>
+            <ellipse cx="60" cy="34" rx="34" ry="18" fill="#c4b5fd"/>
+            <rect x="26" y="30" width="68" height="12" rx="2" fill="#a78bfa"/>
+            <rect x="56" y="16" width="8" height="8" rx="4" fill="#c4b5fd"/>
+            <line class="presenter-brow-l" x1="39" y1="46" x2="55" y2="45" stroke="#8b6914" stroke-width="2.5" stroke-linecap="round"/>
+            <line class="presenter-brow-r" x1="65" y1="45" x2="81" y2="46" stroke="#8b6914" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse cx="47" cy="56" rx="10" ry="11" fill="#fff"/>
+            <ellipse cx="73" cy="56" rx="10" ry="11" fill="#fff"/>
+            <circle class="presenter-pupil-l" cx="49" cy="57" r="4.5" fill="#222"/>
+            <circle class="presenter-pupil-r" cx="75" cy="57" r="4.5" fill="#222"/>
+            <circle class="presenter-glint-l" cx="50.5" cy="55" r="1.8" fill="#fff"/>
+            <circle class="presenter-glint-r" cx="76.5" cy="55" r="1.8" fill="#fff"/>
+            <ellipse class="presenter-lid-l" cx="47" cy="46" rx="11" ry="0" fill="#fdd9b5"/>
+            <ellipse class="presenter-lid-r" cx="73" cy="46" rx="11" ry="0" fill="#fdd9b5"/>
+            <ellipse class="presenter-mouth-hole" cx="60" cy="76" rx="1" ry="0.5" fill="#2c1320"/>
+            <rect class="presenter-teeth-upper" x="55" y="74" width="10" height="0" rx="1" fill="#fff" opacity="0.95"/>
+            <rect class="presenter-teeth-lower" x="55" y="78" width="10" height="0" rx="1" fill="#eee" opacity="0.85"/>
+            <ellipse class="presenter-tongue" cx="60" cy="80" rx="4" ry="0" fill="#d44"/>
+            <path class="presenter-lip-upper" d="M52,76 Q56,75 60,75 Q64,75 68,76" stroke="#c0392b" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <path class="presenter-lip-lower" d="M52,76 Q56,77 60,77 Q64,77 68,76" stroke="#a93226" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <circle class="presenter-cheek-l" cx="36" cy="70" r="5" fill="#f0a6ca" opacity="0.35"/>
+            <circle class="presenter-cheek-r" cx="84" cy="70" r="5" fill="#f0a6ca" opacity="0.35"/>
+          </g>
+        </svg>
+        <!-- Presenter B: slides 5-8 -->
+        <svg class="presenter-svg presenter-b" id="presenter-b" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="display:none">
+          <g class="presenter-head">
+            <ellipse class="presenter-jaw" cx="60" cy="80" rx="24" ry="18" fill="#f5d0a9"/>
+            <ellipse cx="60" cy="58" rx="32" ry="32" fill="#f5d0a9"/>
+            <ellipse cx="60" cy="34" rx="35" ry="14" fill="#f0a6ca"/>
+            <rect x="25" y="30" width="70" height="10" rx="2" fill="#e0879b"/>
+            <rect x="28" y="26" width="64" height="8" rx="3" fill="#f0a6ca"/>
+            <rect x="65" y="20" width="28" height="10" rx="2" fill="#f0a6ca"/>
+            <line class="presenter-brow-l" x1="39" y1="46" x2="55" y2="45" stroke="#6b4e14" stroke-width="2.5" stroke-linecap="round"/>
+            <line class="presenter-brow-r" x1="65" y1="45" x2="81" y2="46" stroke="#6b4e14" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse cx="47" cy="56" rx="10" ry="11" fill="#fff"/>
+            <ellipse cx="73" cy="56" rx="10" ry="11" fill="#fff"/>
+            <circle class="presenter-pupil-l" cx="49" cy="57" r="4.5" fill="#222"/>
+            <circle class="presenter-pupil-r" cx="75" cy="57" r="4.5" fill="#222"/>
+            <circle class="presenter-glint-l" cx="50.5" cy="55" r="1.8" fill="#fff"/>
+            <circle class="presenter-glint-r" cx="76.5" cy="55" r="1.8" fill="#fff"/>
+            <ellipse class="presenter-lid-l" cx="47" cy="46" rx="11" ry="0" fill="#f5d0a9"/>
+            <ellipse class="presenter-lid-r" cx="73" cy="46" rx="11" ry="0" fill="#f5d0a9"/>
+            <rect x="36" y="48" width="22" height="18" rx="3" fill="none" stroke="#555" stroke-width="2"/>
+            <rect x="62" y="48" width="22" height="18" rx="3" fill="none" stroke="#555" stroke-width="2"/>
+            <line x1="58" y1="56" x2="62" y2="56" stroke="#555" stroke-width="2"/>
+            <ellipse class="presenter-mouth-hole" cx="60" cy="76" rx="1" ry="0.5" fill="#2c1320"/>
+            <rect class="presenter-teeth-upper" x="55" y="74" width="10" height="0" rx="1" fill="#fff" opacity="0.95"/>
+            <rect class="presenter-teeth-lower" x="55" y="78" width="10" height="0" rx="1" fill="#eee" opacity="0.85"/>
+            <ellipse class="presenter-tongue" cx="60" cy="80" rx="4" ry="0" fill="#d44"/>
+            <path class="presenter-lip-upper" d="M52,76 Q56,75 60,75 Q64,75 68,76" stroke="#c0392b" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <path class="presenter-lip-lower" d="M52,76 Q56,77 60,77 Q64,77 68,76" stroke="#a93226" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <circle class="presenter-cheek-l" cx="36" cy="70" r="5" fill="#fbc4ab" opacity="0.35"/>
+            <circle class="presenter-cheek-r" cx="84" cy="70" r="5" fill="#fbc4ab" opacity="0.35"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Progress Dots -->
+    <div class="progress-dots" id="progress-dots">
+      <div class="progress-dot active" data-slide="0"></div>
+      <div class="progress-dot" data-slide="1"></div>
+      <div class="progress-dot" data-slide="2"></div>
+      <div class="progress-dot" data-slide="3"></div>
+      <div class="progress-dot" data-slide="4"></div>
+      <div class="progress-dot" data-slide="5"></div>
+      <div class="progress-dot" data-slide="6"></div>
+      <div class="progress-dot" data-slide="7"></div>
+    </div>
+
+    <!-- ==================== SLIDES ==================== -->
+
+    <!-- Slide 1: Title -->
+    <section class="slide slide-title-layout slide-active" data-index="0" data-audio="slide-01.mp3" data-presenter="a">
+      <div class="slide-content">
+        <p class="slide-eyebrow">Network Visualization</p>
+        <h1 class="slide-main-title">Maperick</h1>
+        <p class="slide-subtitle-big">Visualize your active TCP connections on a world map</p>
+        <p class="slide-tagline">See exactly where your traffic is going — in your terminal or on a stunning 3D globe</p>
+        <p class="slide-date">Open Source • Rust + SwiftUI</p>
+      </div>
+    </section>
+
+    <!-- Slide 2: The Problem -->
+    <section class="slide slide-center-layout" data-index="1" data-audio="slide-02.mp3" data-presenter="a">
+      <div class="slide-content">
+        <div class="slide-header">
+          <p class="slide-eyebrow">The Challenge</p>
+          <h2 class="slide-heading">Where is your data going?</h2>
+        </div>
+        <div class="slide-body">
+          <p class="slide-body-subtitle">Every day, your computer makes hundreds of network connections. But do you know where they're going?</p>
+          <div class="feature-grid" style="margin-top: 2rem;">
+            <div class="feature-card">
+              <div class="feature-icon">🌍</div>
+              <div class="feature-title">Hidden Destinations</div>
+              <div class="feature-desc">IP addresses don't tell you the physical location</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📊</div>
+              <div class="feature-title">No Visibility</div>
+              <div class="feature-desc">Standard tools show raw data, not insights</div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🔍</div>
+              <div class="feature-title">Complex Tools</div>
+              <div class="feature-desc">Network analysis requires expertise</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Introducing Maperick -->
+    <section class="slide slide-two-col" data-index="2" data-audio="slide-03.mp3" data-presenter="a">
+      <div class="slide-content">
+        <div class="slide-col">
+          <p class="slide-eyebrow">The Solution</p>
+          <h2 class="slide-heading">Meet Maperick</h2>
+          <p class="slide-body-text" style="margin-top: 1.5rem; color: var(--text-muted); line-height: 1.7;">
+            Maperick resolves every outgoing TCP connection to a geographic location and plots it on an ASCII world map — right in your terminal.
+          </p>
+          <ul class="slide-list" style="margin-top: 1.5rem;">
+            <li>Real-time connection tracking</li>
+            <li>Automatic GeoIP resolution</li>
+            <li>Lightweight Rust implementation</li>
+            <li>Zero configuration required</li>
+          </ul>
+        </div>
+        <div class="slide-col">
+          <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/map.png" alt="Maperick ASCII world map" class="slide-image" style="border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);">
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Features - Terminal -->
+    <section class="slide slide-center-layout" data-index="3" data-audio="slide-04.mp3" data-presenter="a">
+      <div class="slide-content">
+        <div class="slide-header">
+          <p class="slide-eyebrow">Terminal UI</p>
+          <h2 class="slide-heading">Beautiful TUI Experience</h2>
+        </div>
+        <div class="slide-body">
+          <p class="slide-body-subtitle">Built with Ratatui for a smooth, responsive terminal interface</p>
+          <div class="three-col-grid" style="margin-top: 2rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+            <div class="stat-card" style="background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
+              <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/map.png" alt="World Map View" style="width: 100%; border-radius: 8px;">
+              <div class="stat-label" style="margin-top: 0.75rem; font-weight: 600; color: var(--white);">World Map</div>
+              <div class="stat-desc" style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.25rem;">See all connections plotted on an ASCII globe</div>
+            </div>
+            <div class="stat-card" style="background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
+              <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/servers.png" alt="Servers View" style="width: 100%; border-radius: 8px;">
+              <div class="stat-label" style="margin-top: 0.75rem; font-weight: 600; color: var(--white);">Server View</div>
+              <div class="stat-desc" style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.25rem;">Browse connected IPs with location data</div>
+            </div>
+            <div class="stat-card" style="background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
+              <img src="https://raw.githubusercontent.com/schlunsen/maperick/main/screenshots/processes.png" alt="Processes View" style="width: 100%; border-radius: 8px;">
+              <div class="stat-label" style="margin-top: 0.75rem; font-weight: 600; color: var(--white);">Process View</div>
+              <div class="stat-desc" style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.25rem;">Group connections by running process</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Mac App -->
+    <section class="slide slide-two-col slide-two-col-reverse" data-index="4" data-audio="slide-05.mp3" data-presenter="b">
+      <div class="slide-content">
+        <div class="slide-col">
+          <img src="presentation-images/slide-05-macapp.png" alt="Maperick Mac App 3D Globe" class="slide-image" style="border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); width: 100%; max-width: 500px;">
+        </div>
+        <div class="slide-col">
+          <p class="slide-eyebrow">macOS App</p>
+          <h2 class="slide-heading">3D Globe Visualization</h2>
+          <p class="slide-body-text" style="margin-top: 1.5rem; color: var(--text-muted); line-height: 1.7;">
+            Native macOS menu-bar app built with SwiftUI and SceneKit. Lives in your menu bar with a beautiful 3D interactive globe.
+          </p>
+          <ul class="slide-list" style="margin-top: 1.5rem;">
+            <li>Real-time 3D globe with connection arcs</li>
+            <li>Menu bar quick stats</li>
+            <li>Persistent connection history</li>
+            <li>Daily, weekly, monthly statistics</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 6: Tech Stack -->
+    <section class="slide slide-center-layout" data-index="5" data-audio="slide-06.mp3" data-presenter="b">
+      <div class="slide-content">
+        <div class="slide-header">
+          <p class="slide-eyebrow">Built With</p>
+          <h2 class="slide-heading">Modern Tech Stack</h2>
+        </div>
+        <div class="slide-body">
+          <div class="tech-grid" style="margin-top: 2rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+            <div class="tech-card" style="background: var(--bg-card); border-radius: 16px; padding: 2rem; border: 1px solid var(--border); text-align: center;">
+              <div class="tech-icon" style="font-size: 3rem;">🦀</div>
+              <div class="tech-name" style="font-size: 1.5rem; font-weight: 700; color: var(--white); margin-top: 0.5rem;">Rust</div>
+              <div class="tech-desc" style="color: var(--text-muted); margin-top: 0.5rem;">High-performance TUI with Ratatui</div>
+              <div class="tech-features" style="margin-top: 1rem; color: var(--text-dim); font-size: 0.9rem; text-align: left;">
+                <div style="margin: 0.25rem 0;">• Zero-cost abstractions</div>
+                <div style="margin: 0.25rem 0;">• Memory safe</div>
+                <div style="margin: 0.25rem 0;">• Cross-platform</div>
+              </div>
+            </div>
+            <div class="tech-card" style="background: var(--bg-card); border-radius: 16px; padding: 2rem; border: 1px solid var(--border); text-align: center;">
+              <div class="tech-icon" style="font-size: 3rem;">🍎</div>
+              <div class="tech-name" style="font-size: 1.5rem; font-weight: 700; color: var(--white); margin-top: 0.5rem;">SwiftUI</div>
+              <div class="tech-desc" style="color: var(--text-muted); margin-top: 0.5rem;">Native macOS experience</div>
+              <div class="tech-features" style="margin-top: 1rem; color: var(--text-dim); font-size: 0.9rem; text-align: left;">
+                <div style="margin: 0.25rem 0;">• SceneKit 3D rendering</div>
+                <div style="margin: 0.25rem 0;">• Menu bar integration</div>
+                <div style="margin: 0.25rem 0;">• SQLite persistence</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 7: GeoIP -->
+    <section class="slide slide-center-layout" data-index="6" data-audio="slide-07.mp3" data-presenter="b">
+      <div class="slide-content">
+        <div class="slide-header">
+          <p class="slide-eyebrow">Powered By</p>
+          <h2 class="slide-heading">MaxMind GeoLite2</h2>
+        </div>
+        <div class="slide-body">
+          <p class="slide-body-subtitle">Auto-updating GeoIP database for accurate location resolution</p>
+          <div class="geoip-flow" style="margin-top: 3rem; display: flex; align-items: center; justify-content: center; gap: 2rem;">
+            <div class="flow-step" style="text-align: center;">
+              <div class="flow-icon" style="font-size: 2.5rem;">📡</div>
+              <div class="flow-label" style="color: var(--text-muted); margin-top: 0.5rem;">TCP Connection</div>
+            </div>
+            <div class="flow-arrow" style="color: var(--rose); font-size: 1.5rem;">→</div>
+            <div class="flow-step" style="text-align: center;">
+              <div class="flow-icon" style="font-size: 2.5rem;">🔍</div>
+              <div class="flow-label" style="color: var(--text-muted); margin-top: 0.5rem;">IP Lookup</div>
+            </div>
+            <div class="flow-arrow" style="color: var(--rose); font-size: 1.5rem;">→</div>
+            <div class="flow-step" style="text-align: center;">
+              <div class="flow-icon" style="font-size: 2.5rem;">🌍</div>
+              <div class="flow-label" style="color: var(--text-muted); margin-top: 0.5rem;">Geo Location</div>
+            </div>
+            <div class="flow-arrow" style="color: var(--rose); font-size: 1.5rem;">→</div>
+            <div class="flow-step" style="text-align: center;">
+              <div class="flow-icon" style="font-size: 2.5rem;">🗺️</div>
+              <div class="flow-label" style="color: var(--text-muted); margin-top: 0.5rem;">Map Display</div>
+            </div>
+          </div>
+          <p style="margin-top: 3rem; color: var(--text-dim); font-size: 0.95rem;">
+            Database automatically downloaded and cached on first run. No manual configuration needed.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8: Get Started -->
+    <section class="slide slide-title-layout" data-index="7" data-audio="slide-08.mp3" data-presenter="b">
+      <div class="slide-content">
+        <p class="slide-eyebrow">Open Source</p>
+        <h2 class="slide-heading" style="font-size: 4rem;">Get Started Today</h2>
+        <div class="install-command" style="margin-top: 2rem; background: var(--bg-surface); padding: 1.5rem 2rem; border-radius: 12px; font-family: var(--font-mono); font-size: 1.1rem; color: var(--lavender); border: 1px solid var(--border); text-align: left;">
+          <div style="color: var(--text-dim); margin-bottom: 0.5rem;"># Clone and run</div>
+          <div>git clone https://github.com/schlunsen/maperick.git</div>
+          <div>cd maperick && cargo run</div>
+        </div>
+        <div class="cta-buttons" style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+          <a href="https://github.com/schlunsen/maperick" class="cta-button" style="background: linear-gradient(135deg, var(--rose), var(--lavender)); color: var(--bg); padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            View on GitHub
+          </a>
+          <a href="https://github.com/schlunsen/maperick/releases" class="cta-button" style="background: transparent; border: 2px solid var(--rose); color: var(--rose); padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            Download Mac App
+          </a>
+        </div>
+        <p class="slide-date" style="margin-top: 2rem;">MIT License • Made with ❤️</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Audio elements -->
+  <audio id="narration-audio" preload="auto"></audio>
+  <audio id="bg-music" loop preload="auto">
+    <source src="presentation-audio/bg-music.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="engine/presentation-bg.js"></script>
+  <script src="engine/presentation-script.js"></script>
+</body>
+</html>
