@@ -77,7 +77,7 @@ struct StatsView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("LAST 30 DAYS")
                 .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundColor(.secondary)
+                .foregroundColor(.white.opacity(0.5))
 
             DailyBarChart(data: state.dailyStats)
                 .frame(height: 120)
@@ -91,14 +91,31 @@ struct StatsView: View {
             HStack(spacing: 12) {
                 Text("BREAKDOWN")
                     .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.5))
 
-                Picker("", selection: $selectedPeriod) {
-                    Text("Weekly").tag(0)
-                    Text("Monthly").tag(1)
+                // Custom period picker for dark background contrast
+                HStack(spacing: 2) {
+                    ForEach([(label: "Weekly", tag: 0), (label: "Monthly", tag: 1)], id: \.tag) { option in
+                        Button(action: { selectedPeriod = option.tag }) {
+                            Text(option.label)
+                                .font(.system(size: 11, weight: selectedPeriod == option.tag ? .semibold : .medium))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 4)
+                                .background(
+                                    selectedPeriod == option.tag
+                                        ? Color.white.opacity(0.15)
+                                        : Color.clear
+                                )
+                                .foregroundColor(
+                                    selectedPeriod == option.tag
+                                        ? .white
+                                        : .white.opacity(0.55)
+                                )
+                                .cornerRadius(4)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
-                .pickerStyle(.segmented)
-                .frame(width: 160)
             }
 
             let periods = selectedPeriod == 0 ? state.weeklySummaries : state.monthlySummaries
@@ -106,7 +123,7 @@ struct StatsView: View {
             if periods.isEmpty {
                 Text("No data yet — stats accumulate as the app runs")
                     .font(.system(size: 11))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.5))
                     .padding(.top, 4)
             } else {
                 ForEach(periods) { period in
@@ -145,7 +162,7 @@ private struct StatCard: View {
                     .foregroundColor(color)
                 Text(title)
                     .font(.system(size: 9, weight: .medium))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.5))
             }
 
             Text(value)
@@ -155,7 +172,7 @@ private struct StatCard: View {
             if !subtitle.isEmpty {
                 Text(subtitle)
                     .font(.system(size: 9))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.45))
             }
         }
         .padding(10)
@@ -242,7 +259,7 @@ private struct PeriodRow: View {
                 .foregroundColor(color)
             Text(value)
                 .font(.system(size: 10, weight: .medium, design: .monospaced))
-                .foregroundColor(.secondary)
+                .foregroundColor(.white.opacity(0.55))
         }
     }
 

@@ -43,7 +43,10 @@ struct GlobeWindowView: View {
             HStack(spacing: 10) {
                 // Close button
                 Button(action: {
-                    NSApp.keyWindow?.close()
+                    // Use keyWindow first, fall back to mainWindow, then any window containing this view
+                    if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+                        window.close()
+                    }
                 }) {
                     Circle()
                         .fill(isHoveringClose ? Color.red : Color.red.opacity(0.7))
@@ -75,7 +78,7 @@ struct GlobeWindowView: View {
                             .foregroundColor(.accentColor)
                         Button(action: { selectedProcess = nil }) {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.white.opacity(0.5))
                                 .font(.system(size: 11))
                         }
                         .buttonStyle(.plain)
@@ -101,7 +104,7 @@ struct GlobeWindowView: View {
                     .cornerRadius(4)
                 }
                 .buttonStyle(.plain)
-                .foregroundColor(followMode ? .accentColor : .secondary)
+                .foregroundColor(followMode ? .accentColor : .white.opacity(0.6))
 
                 HStack(spacing: 4) {
                     Circle()
@@ -110,7 +113,7 @@ struct GlobeWindowView: View {
 
                     Text("\(displayedConnectionCount) active connections")
                         .font(.system(size: 12, weight: .medium, design: .monospaced))
-                        .foregroundColor(displayedConnectionCount > 0 ? .green : .secondary)
+                        .foregroundColor(displayedConnectionCount > 0 ? .green : .white.opacity(0.5))
                 }
             }
             .padding(.horizontal, 12)
@@ -131,15 +134,38 @@ struct GlobeWindowView: View {
 
             // Bottom stats bar
             HStack(spacing: 0) {
-                // Tab picker
-                Picker("", selection: $selectedTab) {
-                    Text("Servers").tag(0)
-                    Text("Processes").tag(1)
-                    Text("History").tag(2)
-                    Text("Stats").tag(3)
+                // Tab picker — custom buttons for better contrast on dark background
+                HStack(spacing: 2) {
+                    ForEach([
+                        (label: "Servers", icon: "server.rack", tag: 0),
+                        (label: "Processes", icon: "app.badge", tag: 1),
+                        (label: "History", icon: "clock.arrow.circlepath", tag: 2),
+                        (label: "Stats", icon: "chart.bar", tag: 3),
+                    ], id: \.tag) { tab in
+                        Button(action: { selectedTab = tab.tag }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: tab.icon)
+                                    .font(.system(size: 10))
+                                Text(tab.label)
+                                    .font(.system(size: 11, weight: selectedTab == tab.tag ? .semibold : .medium))
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(
+                                selectedTab == tab.tag
+                                    ? Color.white.opacity(0.15)
+                                    : Color.clear
+                            )
+                            .foregroundColor(
+                                selectedTab == tab.tag
+                                    ? Color.white
+                                    : Color.white.opacity(0.55)
+                            )
+                            .cornerRadius(6)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
-                .pickerStyle(.segmented)
-                .frame(width: 340)
 
                 Divider()
                     .frame(height: 20)
@@ -157,6 +183,7 @@ struct GlobeWindowView: View {
                                     }
                                     Text(server.city.isEmpty ? server.ip : server.city)
                                         .font(.system(size: 11, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.85))
                                         .lineLimit(1)
                                     Text("\(server.connectionCount)")
                                         .font(.system(size: 11, weight: .bold, design: .monospaced))
@@ -181,9 +208,10 @@ struct GlobeWindowView: View {
                                             .font(.system(size: 9))
                                         Text(proc.name)
                                             .font(.system(size: 11, weight: selectedProcess == proc.name ? .bold : .medium))
+                                            .foregroundColor(selectedProcess == proc.name ? .accentColor : .white.opacity(0.8))
                                         Text("\(proc.connectionCount)")
                                             .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                            .foregroundColor(selectedProcess == proc.name ? .accentColor : .secondary)
+                                            .foregroundColor(selectedProcess == proc.name ? .accentColor : .white.opacity(0.5))
                                     }
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
@@ -202,13 +230,14 @@ struct GlobeWindowView: View {
                     HStack(spacing: 16) {
                         Text("\(state.totalUniqueIPsEverSeen) unique IPs all-time")
                             .font(.system(size: 11))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.white.opacity(0.7))
 
                         if !state.topHistoricalServers.isEmpty {
                             ForEach(state.topHistoricalServers.prefix(4)) { hist in
                                 HStack(spacing: 4) {
                                     Text(hist.ip)
                                         .font(.system(size: 10, design: .monospaced))
+                                        .foregroundColor(.white.opacity(0.7))
                                     Text("\(hist.totalConnections)")
                                         .font(.system(size: 10, weight: .bold, design: .monospaced))
                                         .foregroundColor(.accentColor)
@@ -223,14 +252,14 @@ struct GlobeWindowView: View {
                             .foregroundColor(.accentColor)
                         Text("\(state.allTimeSummary?.totalDays ?? 0) days tracked")
                             .font(.system(size: 11))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.white.opacity(0.7))
 
                         if let summary = state.allTimeSummary, summary.uniqueIPs > 0 {
                             Text("·")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.white.opacity(0.4))
                             Text("\(summary.uniqueIPs) unique IPs")
                                 .font(.system(size: 11))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.white.opacity(0.7))
                         }
 
                         Spacer()
