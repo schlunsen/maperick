@@ -2,7 +2,7 @@
 // NAVIGATION
 // ========================================
 const slides = document.querySelectorAll('.slide');
-const dots = document.querySelectorAll('.dot');
+const dots = document.querySelectorAll('.progress-dot');
 const counter = document.getElementById('slide-counter');
 const prevBtn = document.getElementById('nav-prev');
 const nextBtn = document.getElementById('nav-next');
@@ -54,8 +54,8 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevSlide(); }
 });
-nextBtn.addEventListener('click', nextSlide);
-prevBtn.addEventListener('click', prevSlide);
+if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+if (prevBtn) prevBtn.addEventListener('click', prevSlide);
 dots.forEach(function(dot, i) {
   dot.addEventListener('click', function() { goToSlide(i, i > currentSlide ? 'next' : 'prev'); });
 });
@@ -426,11 +426,18 @@ var audioCtx = null, analyser = null, analyserData = null;
 var mouthAnimFrame = null;
 var connectedSources = new WeakMap();
 
-// Slide-to-presenter mapping: slide 1 & 12 = C (Valentina), slides 2 & 11 = A (Alex), slides 3-10 = B (Sam)
+// Slide-to-presenter mapping: read from HTML data-presenter attribute, fallback to 'a'
 function getPresenter(slideIndex) {
-  if (slideIndex === 0 || slideIndex === 11) return 'c'; // slides 1 & 12
-  if (slideIndex === 1 || slideIndex === 10) return 'a'; // slides 2 & 11 (Alex)
-  return 'b';
+  var slide = slides[slideIndex];
+  if (slide) {
+    var dp = slide.getAttribute('data-presenter');
+    if (dp && presenterEls[dp]) return dp;
+  }
+  // Fallback: first available presenter
+  if (presenterA) return 'a';
+  if (presenterB) return 'b';
+  if (presenterC) return 'c';
+  return 'a';
 }
 
 var currentPresenterWho = null;
@@ -450,6 +457,11 @@ function randomFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 function showPresenter(slideIndex) {
   var who = getPresenter(slideIndex);
+
+  // Safety: if presenter bubble or target presenter is missing, skip silently
+  if (!presenterBubble) return;
+  var targetEl = presenterEls[who];
+  if (!targetEl) return;
 
   // Same presenter, just make sure visible
   if (who === currentPresenterWho) {
@@ -491,17 +503,19 @@ function showPresenter(slideIndex) {
 
   // First appearance — stroke draws in with enter animation
   if (!prevWho || !presenterBubble.classList.contains('visible')) {
-    presenterA.style.display = 'none';
-    presenterB.style.display = 'none';
-    presenterC.style.display = 'none';
+    if (presenterA) presenterA.style.display = 'none';
+    if (presenterB) presenterB.style.display = 'none';
+    if (presenterC) presenterC.style.display = 'none';
     var newEl = presenterEls[who];
     clearAnimClasses(newEl);
     newEl.style.display = '';
     newEl.classList.add(randomFrom(ENTER_ANIMS));
-    presenterName.textContent = PRESENTER_NAMES[who];
-    presenterName.classList.remove('anim-in');
-    void presenterName.offsetWidth;
-    presenterName.classList.add('anim-in');
+    if (presenterName) {
+      presenterName.textContent = PRESENTER_NAMES[who];
+      presenterName.classList.remove('anim-in');
+      void presenterName.offsetWidth;
+      presenterName.classList.add('anim-in');
+    }
     presenterBubble.classList.remove('presenter-active-a', 'presenter-active-b', 'presenter-active-c');
     presenterBubble.classList.add('presenter-active-' + who);
     presenterBubble.classList.add('visible');
@@ -514,7 +528,7 @@ function showPresenter(slideIndex) {
   swapInProgress = true;
 
   var oldEl = presenterEls[prevWho];
-  var newEl = presenterEls[who];
+  if (!oldEl) { swapInProgress = false; return; }
   var exitAnim = randomFrom(EXIT_ANIMS);
   var enterAnim = randomFrom(ENTER_ANIMS);
 
@@ -529,9 +543,11 @@ function showPresenter(slideIndex) {
     oldEl.style.display = 'none';
     clearAnimClasses(oldEl);
 
-    swapBurst.classList.remove('fire');
-    void swapBurst.offsetWidth;
-    swapBurst.classList.add('fire');
+    if (swapBurst) {
+      swapBurst.classList.remove('fire');
+      void swapBurst.offsetWidth;
+      swapBurst.classList.add('fire');
+    }
 
     // Update ring color
     presenterBubble.classList.remove('presenter-active-a', 'presenter-active-b', 'presenter-active-c');
@@ -539,28 +555,30 @@ function showPresenter(slideIndex) {
 
     setTimeout(function() {
       // Phase 2: New presenter enters + stroke draws in
-      newEl.style.display = '';
-      clearAnimClasses(newEl);
-      void newEl.offsetWidth;
-      newEl.classList.add(enterAnim);
+      targetEl.style.display = '';
+      clearAnimClasses(targetEl);
+      void targetEl.offsetWidth;
+      targetEl.classList.add(enterAnim);
       animateStrokeDraw(500);
 
       // Name tag slides in
-      presenterName.textContent = PRESENTER_NAMES[who];
-      presenterName.classList.remove('anim-in');
-      void presenterName.offsetWidth;
-      presenterName.classList.add('anim-in');
+      if (presenterName) {
+        presenterName.textContent = PRESENTER_NAMES[who];
+        presenterName.classList.remove('anim-in');
+        void presenterName.offsetWidth;
+        presenterName.classList.add('anim-in');
+      }
 
       setTimeout(function() {
         swapInProgress = false;
-        swapBurst.classList.remove('fire');
+        if (swapBurst) swapBurst.classList.remove('fire');
       }, 700);
     }, 250); // slight delay after burst starts before new enters
   }, 500); // wait for exit animation to finish
 }
 
 function hidePresenter() {
-  presenterBubble.classList.remove('visible', 'speaking');
+  if (presenterBubble) presenterBubble.classList.remove('visible', 'speaking');
   stopMouthAnimation();
 }
 
