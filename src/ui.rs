@@ -61,7 +61,10 @@ fn draw_map_tab(f: &mut Frame, app: &mut App, area: Rect) {
                 ctx.print(
                     server.coords.1,
                     server.coords.0,
-                    Span::styled("●", Style::default().fg(color)),
+                    Span::styled(
+                        if app.enhanced_graphics { "●" } else { "*" },
+                        Style::default().fg(color),
+                    ),
                 );
             }
         })
